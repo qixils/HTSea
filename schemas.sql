@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     minecraft uuid UNIQUE,
     wordleWord CHAR(5),
     wordleGuesses CHAR(5)[6],
-    wordleEnded timestamp,
+    wordleCooldown timestamp,
     diamonds NUMERIC(8,3),
     accessToken VARCHAR(2048),
     refreshToken VARCHAR(512),
