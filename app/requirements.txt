@@ -1,4 +1,6 @@
 aiohttp~=3.8.1
+asyncpg==0.25.0
 databases~=0.5.5
 fastapi~=0.75.0
-ruamel.yaml~=0.17.21
+PyYAML~=6.0
+uvicorn==0.17.6

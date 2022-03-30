@@ -8,12 +8,14 @@ import random
 import hashlib
 import time
 import os
-from ruamel.yaml import YAML
+import yaml
 
-_yaml = YAML()
 if not os.path.exists("config.yml"):
     raise Exception("config.yml not found; please create one using the provided example_config.yml")
-config = _yaml.load("config.yml")
+config = None
+with open("config.yml", "rb") as config_file:
+    config = yaml.safe_load(config_file)
+print(config)
 db = databases.Database(config["db-url"], password=config["db-password"])
 
 
@@ -89,7 +91,7 @@ def gen_discord_oauth_payload(code: str, redirect_uri: typing.Optional[str] = No
 
 async def get_user_data(http_client: aiohttp.ClientSession,
                         code: str,
-                        redirect_uri: typing.Optional[str] = None) -> dict[str, typing.Any]:
+                        redirect_uri: typing.Optional[str] = None) -> typing.Dict[str, typing.Any]:
     if code is None:
         raise ApiException("This page must be accessed through the Discord OAuth flow.",
                            HTTPStatus.UNAUTHORIZED)
