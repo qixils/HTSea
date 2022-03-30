@@ -6,6 +6,9 @@ import cloud.commandframework.paper.PaperCommandManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,6 +17,7 @@ import java.net.URL;
 
 public final class HTSea extends JavaPlugin {
 
+	private final MainMenu menu = new MainMenu();
 	private @Nullable String apiSecret;
 	private @Nullable URL apiUrl;
 	private @Nullable PaperCommandManager<CommandSender> commandManager;
@@ -45,7 +49,8 @@ public final class HTSea extends JavaPlugin {
 		// commands
 		commandManager.command(
 				commandManager.commandBuilder("htsea", ArgumentDescription.of("Opens the HTSea menu for managing your wallet"))
-						.handler(ctx -> )
+						.senderType(Player.class)
+						.handler(ctx -> menu.getInventory().open((Player) ctx.getSender()))
 		);
 	}
 
@@ -77,5 +82,10 @@ public final class HTSea extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		// Plugin shutdown logic
+	}
+
+	@EventHandler
+	public void onJoin(PlayerJoinEvent event) {
+
 	}
 }

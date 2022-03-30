@@ -1,0 +1,6 @@
+# The URL of the PostgreSQL database to connect to
+db-url: postgresql://user@localhost:5432/dbname
+# The password for the PostgreSQL database
+db-password: password
+# The secret API token used to authenticate with the Minecraft server.
+mc-secret: ""

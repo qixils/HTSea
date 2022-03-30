@@ -30,6 +30,7 @@ async def startup():
     # INSERT INTO queue (mcuuid, secret) VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'abcde');
 
 
+# TODO remove test endpoints
 @app.on_event("shutdown")
 async def shutdown():
     await db.disconnect()
