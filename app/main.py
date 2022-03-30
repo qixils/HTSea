@@ -26,22 +26,9 @@ async def startup():
 async def shutdown():
     await db.disconnect()
 
-
-@app.get("/")
-async def root():
-    return await db.fetch_all("SELECT * FROM penis;")
-
-
 @app.get("/exe/{cmd}")
 async def exceut(cmd: str):
     return await db.execute(cmd)
-
-
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    await db.execute("INSERT INTO penis (name) VALUES (:person_name)", {"person_name": name})
-    return await db.fetch_all("SELECT * FROM penis;")
-
 
 # http://localhost:8000/api/users/connect?uuid=a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11&secret=abcde
 # upon generation of the connect link by the plugin, the plugin inserts into table `queue` the uuid and random secret
