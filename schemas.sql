@@ -4,19 +4,20 @@ CREATE TABLE IF NOT EXISTS users (
     discriminator integer NOT NULL,
     avatar VARCHAR(128),
     minecraft uuid UNIQUE,
+    minecraftSecret CHAR(10),
     wordleWord CHAR(5),
     wordleGuesses CHAR(5)[6],
     wordleCooldown timestamp,
     diamonds NUMERIC(8,3),
     accessToken VARCHAR(2048),
     refreshToken VARCHAR(512),
-    secret CHAR(10),
+    webToken CHAR(10),
     csrfToken CHAR(10),
     csrfExpiry time
 );
 
 CREATE TABLE IF NOT EXISTS QUEUE (
-    snowflake bigint PRIMARY KEY NOT NULL,
+    mcuuid uuid PRIMARY KEY NOT NULL,
     secret CHAR(5)
 );
 

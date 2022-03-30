@@ -2,10 +2,8 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from ..dependencies import *
-import random
 import collections
 import datetime
-import json
 
 route = APIRouter(prefix="/api/wordle")
 
@@ -27,42 +25,42 @@ def guessword(wword, wguess):
 
 @route.post("/guess")
 async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(Wordlist)):
-    secret = user_req.cookies.get("secret")
+    secret = user_req.cookies.get("webToken")
     status = await validate_user(secret, None)
     if not status:
         return "bad"
-    user = dict(await db.fetch_one("SELECT * FROM users WHERE secret = :secret", {"secret": secret}))
+    user = dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret", {"secret": secret}))
 
     # ensure guesses < 5 here
     if user["wordleGuesses"] > 6:
         return "already done idot"
 
     word = user["wordleWord"]
-    wordslist = words.getList()
+    wordslist = words.get_list()
     if guess not in wordslist:
         return "not a word"
     result = guessword(word, guess)
     if result == "ggggg":
         payment_table = [1/2, 1/5, 1/10, 1/20, 1/50, 1/100]
-        await db.execute("UPDATE users SET diamonds = diamonds + :payment WHERE secret = :sess_token",
+        await db.execute("UPDATE users SET diamonds = diamonds + :payment WHERE webToken = :sess_token",
                          {"sess_token": secret, "payment": payment_table[user["wordleGuesses"] - 1]})
-        await db.execute("UPDATE users SET wordleCooldown = :timestamp WHERE secret = :sess_token",
+        await db.execute("UPDATE users SET wordleCooldown = :timestamp WHERE webToken = :sess_token",
                          {"sess_token": secret, "timestamp": datetime.datetime.now() + datetime.timedelta(minutes=5)})
         return "congrats"
 
     if user["wordleGuesses"] == 6:
-        await db.execute("UPDATE users SET wordleCooldown = :timestamp WHERE secret = :sess_token",
+        await db.execute("UPDATE users SET wordleCooldown = :timestamp WHERE webToken = :sess_token",
                          {"sess_token": secret, "timestamp": datetime.datetime.now() + datetime.timedelta(minutes=5)})
         return "you failed lol"
 
 
 @route.get("/info")
 async def wordle_info(user_req: Request):
-    secret = user_req.cookies.get("secret")
+    secret = user_req.cookies.get("webToken")
     status = await validate_user(secret, None)
     if not status:
         return "stop girlbossing with the api"
-    user = dict(await db.fetch_one("SELECT * FROM users WHERE secret = :secret", {"secret": secret}))
+    user = dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret", {"secret": secret}))
     data = [user.pop(key) for key in ["wordlecooldown", "diamonds", "name", "wordleguesses"]]
     json_compatible_item_data = jsonable_encoder(data)
     return JSONResponse(content=json_compatible_item_data)

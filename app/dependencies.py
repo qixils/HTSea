@@ -1,4 +1,3 @@
-from typing import Union
 import aiohttp
 import databases
 import random
@@ -6,11 +5,14 @@ import hashlib
 import time
 import os
 
-db = databases.Database("postgresql://adamthedog@localhost:5432/adamthedog")
+db = databases.Database("postgresql://adamthedog@localhost:5432/adamthedog", password="password")
 
 
 class HttpClient:
-    session: Union[aiohttp.ClientSession, None] = None
+    session = None
+
+    def __init__(self):
+        pass
 
     def start(self):
         self.session = aiohttp.ClientSession()
@@ -22,8 +24,9 @@ class HttpClient:
     def __call__(self) -> aiohttp.ClientSession:
         return self.session
 
+
 def csrf():
-    return hashlib.md5(bytes(str(random.SystemRandom().random()+time.time()),"utf-8") ).hexdigest()[0:10]
+    return hashlib.md5(bytes(str(random.SystemRandom().random()+time.time()), "utf-8")).hexdigest()[0:10]
 
 
 client_id = "956657160979374090"
@@ -31,18 +34,19 @@ client_secret = "99zkVEX7Blps6WjJQaXzkahayZxeQ7rf"
 redirect_uri = "http://localhost:8000/register"
 grant_type = "authorization_code"
 
-TESTING = True
-
 
 # wordlist singleton, why not
 class Wordlist:
     wordlist = None
 
+    def __init__(self):
+        pass
+
     @classmethod
-    def getList(cls):
+    def get_list(cls):
         if cls.wordlist is None:
             print(os.listdir())
-            with open("app/words.txt","r") as words:
+            with open("app/words.txt", "r") as words:
                 cls.wordlist = words.read().split("\n")
         return cls.wordlist
 
@@ -52,7 +56,7 @@ def gen_csrf():
 
 
 async def validate_user(session_token: str, csrf_token: str = None):
-    users = db.fetch_all("SELECT * from users where secret = :sess_token", {"sess_token": session_token})
+    users = await db.fetch_one("SELECT * from users where webToken = :sess_token", {"sess_token": session_token})
     # no user by that token
     if not users:
         return 0
@@ -63,7 +67,7 @@ async def validate_user(session_token: str, csrf_token: str = None):
             # potential attack attempted, gen new token and log
             # can also occur by someone going back on an old page (older than csrf token expiry)
             new_token = gen_csrf()
-            await db.execute("UPDATE users SET csrfToken = :new_token WHERE secret = :sess_token",
+            await db.execute("UPDATE users SET csrfToken = :new_token WHERE webToken = :sess_token",
                              {"sess_token": session_token,
                               "new_token": new_token})
             return 0
