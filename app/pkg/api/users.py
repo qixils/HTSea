@@ -93,30 +93,78 @@ async def register_mc(user_req: Request,
     return response
 
 
-@route.get("/secret")
-async def get_secret(req: Request, resp: Response):
+def validate_mc_request(req: Request) -> typing.Optional[Response]:
     if 'Authorization' not in req.headers:
-        resp.status_code = HTTPStatus.UNAUTHORIZED
-        return {'error': 'This internal endpoint requires a secret token.'}
+        return JSONResponse({'error': 'This internal endpoint requires a secret token.'},
+                            HTTPStatus.UNAUTHORIZED)
     if req.headers['Authorization'] != "Bearer " + os.getenv('MC_SECRET'):
-        resp.status_code = HTTPStatus.FORBIDDEN
-        return {'error': 'The provided secret token is invalid.'}
+        return JSONResponse({'error': 'The provided secret token is invalid.'},
+                            HTTPStatus.FORBIDDEN)
+    return None
+
+
+@route.get("/mc/secret")
+async def get_secret(req: Request):
+    if validate_resp := validate_mc_request(req):
+        return validate_resp
     if 'uuid' not in req.query_params:
-        resp.status_code = HTTPStatus.BAD_REQUEST
-        return {'error': 'The uuid query parameter is required.'}
+        return JSONResponse({'error': 'The uuid query parameter is required.'},
+                            HTTPStatus.BAD_REQUEST)
     uuid = req.query_params['uuid']
     uuid_map = {"uuid": uuid}
     if await db.fetch_one("SELECT * FROM users WHERE minecraft=:uuid", uuid_map):
-        resp.status_code = HTTPStatus.BAD_REQUEST
-        return {'error': 'The provided uuid is already registered.'}
+        return JSONResponse({'error': 'The provided uuid is already registered.'},
+                            HTTPStatus.BAD_REQUEST)
     queue = await db.fetch_one("SELECT secret FROM queue WHERE mcuuid=:uuid", uuid_map)
     if not queue:
         queue = {'mcuuid': uuid, 'secret': gen_mc_secret()[:5]}
         await db.execute("INSERT INTO queue (mcuuid, secret) VALUES (:mcuuid, :secret)", queue)
     return {'secret': queue['secret']}
 
+
+@route.get("/mc/profile")
+async def get_profile_by_uuid(req: Request):
+    if validate_resp := validate_mc_request(req):
+        return validate_resp
+    if 'uuid' not in req.query_params:
+        return JSONResponse({'error': 'The uuid query parameter is required.'},
+                            HTTPStatus.BAD_REQUEST)
+    uuid = req.query_params['uuid']
+    profile = await db.fetch_one("SELECT * FROM users WHERE minecraft=:uuid", {'uuid': uuid})
+    if not profile:
+        return JSONResponse({'error': 'The requested profile could not be found.'},
+                             HTTPStatus.NOT_FOUND)
+    return profile
+
+
+@route.post("/mc/add_diamonds")
+async def add_diamonds(req: Request):
+    if validate_resp := validate_mc_request(req):
+        return validate_resp
+    payload = await req.json()
+    if 'uuid' not in payload:
+        return JSONResponse({'error': 'The uuid parameter is required.'},
+                            HTTPStatus.BAD_REQUEST)
+    if 'diamonds' not in payload:
+        return JSONResponse({'error': 'The diamonds parameter is required.'},
+                            HTTPStatus.BAD_REQUEST)
+    uuid = req.query_params['uuid']
+    diamonds = req.query_params['diamonds']
+    profile = await db.fetch_one("SELECT * FROM users WHERE minecraft=:uuid", {'uuid': uuid})
+    if not profile:
+        return JSONResponse({'error': 'The requested profile could not be found.'},
+                            HTTPStatus.NOT_FOUND)
+    profile['diamonds'] += diamonds
+    if profile['diamonds'] < 0:
+        # TODO use fixed error IDs (an int enum) so this is easier for the plugin to parse?
+        return JSONResponse({'error': "Attempted to withdrawal more diamonds than available in user's account."},
+                            HTTPStatus.BAD_REQUEST)
+    await db.execute("UPDATE users SET diamonds=:diamonds WHERE minecraft=:uuid", profile)
+    return profile
+
+
 @route.get("/session")
-async def get_session(req: Request, resp: Response):
+async def get_session(req: Request):
     user = await get_session_data(req)
     res_data = {
         'logged_in': user is not None

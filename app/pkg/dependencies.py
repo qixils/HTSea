@@ -82,9 +82,10 @@ def gen_discord_oauth_payload(code: str, redirect_uri: str):
         "redirect_uri": redirect_uri
     }
 
+
 async def get_user_data(http_client: aiohttp.ClientSession,
                         code: str,
-                        redirect_uri: str) -> typing.Dict[str, typing.Any]:
+                        redirect_uri: str) -> typing.Mapping[str, typing.Any]:
     if code is None:
         raise ApiException("This page must be accessed through the Discord OAuth flow.",
                            HTTPStatus.UNAUTHORIZED)
@@ -114,12 +115,13 @@ async def get_user_data(http_client: aiohttp.ClientSession,
         "refreshtoken": refresh_token
     }
 
-async def get_session_data(req: Request) -> typing.Dict:
+
+async def get_session_data(req: Request) -> typing.Optional[typing.Mapping[str, typing.Any]]:
     secret = req.cookies.get("webToken")
     status = await validate_user(secret, None)
     if not status:
         return None
-    user = dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret", {"secret": secret}))
+    user = await db.fetch_one("SELECT * FROM users WHERE webToken = :secret", {"secret": secret})
     return user
 
 
