@@ -15,7 +15,6 @@ if not os.path.exists("config.yml"):
 config = None
 with open("config.yml", "rb") as config_file:
     config = yaml.safe_load(config_file)
-print(config)
 db = databases.Database(config["db-url"], password=config["db-password"])
 
 
