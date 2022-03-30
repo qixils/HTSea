@@ -8,14 +8,11 @@ import random
 import hashlib
 import time
 import os
-import yaml
 
-if not os.path.exists("config.yml"):
-    raise Exception("config.yml not found; please create one using the provided example_config.yml")
-config = None
-with open("config.yml", "rb") as config_file:
-    config = yaml.safe_load(config_file)
-db = databases.Database(config["db-url"], password=config["db-password"])
+db = databases.Database("postgresql://{}@db:5432/{}".format(
+    os.getenv("POSTGRES_USER"),
+    os.getenv("POSTGRES_DB"),
+), password=os.getenv("POSTGRES_PASSWORD"))
 
 
 # wordlist singleton, why not

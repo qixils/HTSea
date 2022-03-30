@@ -11,3 +11,6 @@ venv/
 # Python
 **/__pycache__
 **/venv
+
+# Configuration
+.env

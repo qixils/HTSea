@@ -88,7 +88,7 @@ async def get_secret(req: Request, resp: Response):
     if 'Authorization' not in req.headers:
         resp.status_code = HTTPStatus.UNAUTHORIZED
         return {'error': 'This internal endpoint requires a secret token.'}
-    if req.headers['Authorization'] != "Bearer " + config['mc-secret']:
+    if req.headers['Authorization'] != "Bearer " + os.getenv('MC_SECRET'):
         resp.status_code = HTTPStatus.FORBIDDEN
         return {'error': 'The provided secret token is invalid.'}
     if 'uuid' not in req.query_params:
