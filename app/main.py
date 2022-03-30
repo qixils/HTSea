@@ -14,7 +14,15 @@ app.include_router(wordle.route)
 @app.on_event("startup")
 async def startup():
     await db.connect()
-    await db.execute("CREATE TABLE IF NOT EXISTS users ()")
+    
+    db_initialized = await db.execute("""
+        SELECT EXISTS (SELECT 1 FROM information_schema.tables 
+            WHERE table_name = 'users')
+    """)
+
+    if not db_initialized:
+        raise Exception("Database has not been initialized. Initialize from the schemas.sql file :)")
+
     with open("words.txt", "r") as words:
         app.words = words.read().split("\n")
     print("current testing url: "
