@@ -12,6 +12,8 @@ services:
       - POSTGRES_PASSWORD
       - POSTGRES_DB
       - MC_SECRET
+      - CLIENT_ID
+      - CLIENT_SECRET
     depends_on:
       - db
     ports:

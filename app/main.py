@@ -46,9 +46,9 @@ async def connect_minecraft_acct(uuid: str, secret: str):
     db_users = await db.fetch_all("SELECT * FROM queue WHERE mcuuid=:uuid", {"uuid": uuid})
     if len(db_users) < 1:
         return "how did this happen    stop tampering bitchhhfh"
-    rres = RedirectResponse("https://discord.com/api/oauth2/authorize?client_id=956657160979374090&"
+    rres = RedirectResponse("https://discord.com/api/oauth2/authorize?client_id={}&"
                             "redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fapi%2Fusers%2Fregistermc&"
-                            "response_type=code&scope=identify")
+                            "response_type=code&scope=identify".format(client_id))
     rres.set_cookie(key="mcuuid", value=uuid)
     rres.set_cookie(key="mcsecret", value=secret)
     return rres

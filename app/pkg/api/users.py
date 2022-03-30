@@ -43,11 +43,15 @@ async def register(user_req: Request,
         user_resp.status_code = e.status_code
         return e.message
 
+    # TODO: be more careful passing res into SQL
     res['minecraft_secret'] = gen_mc_secret()
     await db.execute("INSERT INTO users (snowflake, name, discriminator, avatar, accesstoken, refreshtoken, webToken,"
                      " minecraftSecret) VALUES (:id, :username, :discriminator, :avatar, :accesstoken, "
                      ":refreshtoken, :secret, :minecraft_secret) "
-                     "ON CONFLICT DO UPDATE SET webToken = EXCLUDED.webToken;", res)
+                     "ON CONFLICT (snowflake)"
+                     "DO UPDATE SET (name, discriminator, avatar, accesstoken, refreshtoken, webToken, minecraftSecret) = "
+                     "(EXCLUDED.name, EXCLUDED.discriminator, EXCLUDED.avatar, EXCLUDED.accesstoken, EXCLUDED.refreshtoken,"
+                     "EXCLUDED.webToken, EXCLUDED.minecraftSecret);", res)
     content = f"<h1>You're now registered with code {res['minecraft_secret']}, input it into minecraft ig now</h1>"
     response = HTMLResponse(content=content)
     response.set_cookie(key="webToken", value=res['secret'])

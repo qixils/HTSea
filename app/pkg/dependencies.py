@@ -53,10 +53,9 @@ class ApiException(Exception):
         self.message = message
         self.status_code = status_code
 
-
-_client_id = "956657160979374090"
-_client_secret = "99zkVEX7Blps6WjJQaXzkahayZxeQ7rf"
-_redirect_uri = "http://localhost:8000/register"
+client_id = os.getenv("CLIENT_ID")
+client_secret = os.getenv("CLIENT_SECRET")
+_redirect_uri = "http://localhost:8000/api/users/register"
 _grant_type = "authorization_code"
 _headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
@@ -77,13 +76,12 @@ def gen_discord_oauth_payload(code: str, redirect_uri: typing.Optional[str] = No
     if redirect_uri is None:
         redirect_uri = _redirect_uri
     return {
-        "client_id": _client_id,
-        "client_secret": _client_secret,
+        "client_id": client_id,
+        "client_secret": client_secret,
         "grant_type": _grant_type,
         "code": code,
         "redirect_uri": redirect_uri
     }
-
 
 async def get_user_data(http_client: aiohttp.ClientSession,
                         code: str,
@@ -107,23 +105,15 @@ async def get_user_data(http_client: aiohttp.ClientSession,
     res = json.loads(await res.read())
     # web token secret
     secret: str = gen_hash(access_token + res["id"])
-    res['secret'] = secret
-    res['avatar'] = f"https://cdn.discordapp.com/avatars/{res['id']}/{res['avatar']}.jpg"
-    res['accesstoken'] = access_token
-    res['refreshtoken'] = refresh_token
-    res['discriminator'] = int(res['discriminator'])
-    # res['id'] = int(res['id'])
-    # sqlalchemy errors if it encounters a dict key for which the query has no matching parameter
-    del res["public_flags"]
-    del res["public_flags"]
-    del res["flags"]
-    del res["banner"]
-    del res["banner_color"]
-    del res["accent_color"]
-    del res["locale"]
-    del res["mfa_enabled"]
-    print(res)
-    return res
+    return {
+        "id": int(res["id"]),
+        "username": res["username"],
+        "discriminator": int(res["discriminator"]),
+        "avatar": f"https://cdn.discordapp.com/avatars/{res['id']}/{res['avatar']}.jpg",
+        "secret": secret,
+        "accesstoken": access_token,
+        "refreshtoken": refresh_token
+    }
 
 
 async def validate_user(session_token: str, csrf_token: str = None):
@@ -131,7 +121,7 @@ async def validate_user(session_token: str, csrf_token: str = None):
                                {"sess_token": session_token})
     # no user by that token
     if not users:
-        return 0
+        return False
 
     # csrf is not a concern with wordle
     if csrf_token is not None:
@@ -142,5 +132,5 @@ async def validate_user(session_token: str, csrf_token: str = None):
             await db.execute("UPDATE users SET csrfToken = :new_token WHERE webToken = :sess_token",
                              {"sess_token": session_token,
                               "new_token": new_token})
-            return 0
-    return 1
+            return False
+    return True
