@@ -6,9 +6,6 @@
 target/
 
 # Python
-venv/
-
-# Python
 **/__pycache__
 **/venv
 

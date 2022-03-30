@@ -113,8 +113,7 @@ async def get_secret(req: Request):
     uuid = req.query_params['uuid']
     uuid_map = {"uuid": uuid}
     if await db.fetch_one("SELECT * FROM users WHERE minecraft=:uuid", uuid_map):
-        return JSONResponse({'error': 'The provided uuid is already registered.'},
-                            HTTPStatus.BAD_REQUEST)
+        return {'secret': None}
     queue = await db.fetch_one("SELECT secret FROM queue WHERE mcuuid=:uuid", uuid_map)
     if not queue:
         queue = {'mcuuid': uuid, 'secret': gen_mc_secret()[:5]}
