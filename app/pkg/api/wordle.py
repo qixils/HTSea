@@ -25,11 +25,11 @@ def guessword(wword, wguess):
 
 @route.post("/guess")
 async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(Wordlist)):
-    secret = user_req.cookies.get("webToken")
-    status = await validate_user(secret, None)
-    if not status:
+    user = get_session_data(user_req)
+    if not user:
+        # TODO proper response
         return "bad"
-    user = dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret", {"secret": secret}))
+    secret = user['webtoken']
 
     # ensure guesses < 5 here
     if user["wordleGuesses"] > 6:

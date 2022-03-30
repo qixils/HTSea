@@ -2,7 +2,8 @@ from http import HTTPStatus
 
 import fastapi
 from fastapi import APIRouter, Depends, Request, Response
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.encoders import jsonable_encoder
 from ..dependencies import *
 
 import aiohttp
@@ -38,7 +39,8 @@ async def register(user_req: Request,
         return "You are already logged in. Try logging out by clearing your cookies for this site."
 
     try:
-        res = await get_user_data(http_client, code)
+        # TODO: janky way to set a redirect URI
+        res = await get_user_data(http_client, code, os.getenv("API_URL_PREFIX") + user_req.scope['path'])
     except ApiException as e:
         user_resp.status_code = e.status_code
         return e.message
@@ -70,7 +72,8 @@ async def register_mc(user_req: Request,
         return "You are already logged in. Try logging out by clearing your cookies for this site."
 
     try:
-        res = await get_user_data(http_client, code, "http://localhost:8000/api/users/registermc")
+        # TODO: janky way to set a redirect URI
+        res = await get_user_data(http_client, code, os.getenv("API_URL_PREFIX") + user_req.scope['path'])
     except ApiException as e:
         user_resp.status_code = e.status_code
         return e.message
@@ -108,3 +111,15 @@ async def get_secret(req: Request, resp: Response):
         queue = {'mcuuid': uuid, 'secret': gen_mc_secret()[:5]}
         await db.execute("INSERT INTO queue (mcuuid, secret) VALUES (:mcuuid, :secret)", queue)
     return {'secret': queue['secret']}
+
+@route.get("/session")
+async def get_session(req: Request, resp: Response):
+    user = await get_session_data(req)
+    res_data = {
+        'logged_in': user is not None
+    }
+    if user is not None:
+        # don't tell the user what word they need to guess
+        del user['wordleword']
+        res_data['user'] = user
+    return JSONResponse(content=jsonable_encoder(res_data))

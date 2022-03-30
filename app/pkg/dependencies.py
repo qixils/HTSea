@@ -9,6 +9,8 @@ import hashlib
 import time
 import os
 
+from fastapi import Request
+
 db = databases.Database("postgresql://{}@db:5432/{}".format(
     os.getenv("POSTGRES_USER"),
     os.getenv("POSTGRES_DB"),
@@ -55,7 +57,6 @@ class ApiException(Exception):
 
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
-_redirect_uri = "http://localhost:8000/api/users/register"
 _grant_type = "authorization_code"
 _headers = {'Content-Type': 'application/x-www-form-urlencoded'}
 
@@ -72,9 +73,7 @@ def gen_mc_secret():
     return gen_csrf()
 
 
-def gen_discord_oauth_payload(code: str, redirect_uri: typing.Optional[str] = None):
-    if redirect_uri is None:
-        redirect_uri = _redirect_uri
+def gen_discord_oauth_payload(code: str, redirect_uri: str):
     return {
         "client_id": client_id,
         "client_secret": client_secret,
@@ -85,11 +84,11 @@ def gen_discord_oauth_payload(code: str, redirect_uri: typing.Optional[str] = No
 
 async def get_user_data(http_client: aiohttp.ClientSession,
                         code: str,
-                        redirect_uri: typing.Optional[str] = None) -> typing.Dict[str, typing.Any]:
+                        redirect_uri: str) -> typing.Dict[str, typing.Any]:
     if code is None:
         raise ApiException("This page must be accessed through the Discord OAuth flow.",
                            HTTPStatus.UNAUTHORIZED)
-    res = await http_client.post("https://discord.com/api/v8/oauth2/token",
+    res = await http_client.post("https://discord.com/api/oauth2/token",
                                  data=gen_discord_oauth_payload(code, redirect_uri),
                                  headers=_headers)
     print(res.status)
@@ -114,6 +113,14 @@ async def get_user_data(http_client: aiohttp.ClientSession,
         "accesstoken": access_token,
         "refreshtoken": refresh_token
     }
+
+async def get_session_data(req: Request) -> typing.Dict:
+    secret = req.cookies.get("webToken")
+    status = await validate_user(secret, None)
+    if not status:
+        return None
+    user = dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret", {"secret": secret}))
+    return user
 
 
 async def validate_user(session_token: str, csrf_token: str = None):
