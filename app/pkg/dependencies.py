@@ -5,6 +5,7 @@ import hashlib
 import time
 import os
 
+# https://www.youtube.com/watch?v=aIAcEKWur-E
 db = databases.Database("postgresql://adamthedog@localhost:5432/adamthedog", password="password")
 
 
@@ -46,7 +47,7 @@ class Wordlist:
     def get_list(cls):
         if cls.wordlist is None:
             print(os.listdir())
-            with open("app/words.txt", "r") as words:
+            with open("words.txt", "r") as words:
                 cls.wordlist = words.read().split("\n")
         return cls.wordlist
 

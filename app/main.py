@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
-from .dependencies import *
+from pkg.dependencies import *
 
-from .api import users
-from .api import wordle
+from pkg.api import users
+from pkg.api import wordle
 
 app = FastAPI()
 
@@ -15,7 +15,7 @@ app.include_router(wordle.route)
 async def startup():
     await db.connect()
     await db.execute("CREATE TABLE IF NOT EXISTS users ()")
-    with open("app/words.txt", "r") as words:
+    with open("words.txt", "r") as words:
         app.words = words.read().split("\n")
     print("current testing url: "
           "http://localhost:8000/api/users/connect?uuid=a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11&secret=abcde")
