@@ -1,0 +1,4 @@
+# The secret API token used to authenticate with the HTSea server.
+api-secret: ""
+# The URL of the HTSea server.
+api-url: ""

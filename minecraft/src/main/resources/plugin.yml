@@ -1,0 +1,8 @@
+name: HTSea
+version: '${project.version}'
+main: dev.qixils.htsea.HTSea
+api-version: 1.18
+prefix: HTSea
+authors: [ qixils ]
+description: Integrates the HTSea Minecraft server into the central HTSea economy database.
+website: https://htsea.qixils.dev/
