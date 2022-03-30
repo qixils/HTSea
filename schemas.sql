@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     wordleWord CHAR(5),
     wordleGuesses CHAR(5)[6],
     wordleCooldown timestamp,
-    diamonds NUMERIC(8,3),
+    diamonds NUMERIC(8,3) NOT NULL DEFAULT 0,
     accessToken VARCHAR(2048),
     refreshToken VARCHAR(512),
     webToken CHAR(10),
