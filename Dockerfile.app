@@ -11,4 +11,4 @@ RUN pip3 install -r requirements.txt
 COPY app .
 
 # Wait for postgres to initialize
-CMD [ "sh", "-c", "./wait-for db:5432 -- uvicorn main:app --reload --host 0.0.0.0" ]
+CMD [ "sh", "-c", "exec ./wait-for db:5432 -- uvicorn main:app --reload --host 0.0.0.0" ]
