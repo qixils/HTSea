@@ -1,4 +1,4 @@
 # The secret API token used to authenticate with the HTSea server.
 api-secret: ""
-# The URL of the HTSea server.
+# The host of the HTSea server. This should be a (sub)domain, not a URL.
 api-url: ""
