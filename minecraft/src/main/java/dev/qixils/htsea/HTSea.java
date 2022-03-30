@@ -17,7 +17,7 @@ import java.net.URL;
 
 public final class HTSea extends JavaPlugin {
 
-	private final MainMenu menu = new MainMenu();
+	private final MainMenu menu = new MainMenu(this);
 	private @Nullable String apiSecret;
 	private @Nullable URL apiUrl;
 	private @Nullable PaperCommandManager<CommandSender> commandManager;
