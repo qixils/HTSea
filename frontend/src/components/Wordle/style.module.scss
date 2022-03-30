@@ -47,6 +47,8 @@
 
     &.has-letter {
         border-color: var(--wordle-grey-light);
+        animation-duration: 0.125s;
+        animation-name: boinkus;
     }
 
     &.incorrect {
@@ -120,5 +122,19 @@
     }
     100% {
         transform: translateX(0);
+    }
+}
+
+@keyframes boinkus {
+    0% {
+        transform: scale(1)
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
     }
 }
