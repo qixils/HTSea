@@ -1,0 +1,20 @@
+@use "sass:color";
+$wordle-grey: rgb(77, 83, 97);
+$wordle-yellow: rgb(177, 115, 0);
+$wordle-green: rgb(20, 126, 82);
+
+:root {
+    --bg-primary: rgb(44, 45, 53);
+    --bg-secondary: rgb(38, 38, 46);
+    --bg-tertiary: rgb(30, 28, 34);
+    --text: rgb(223, 221, 217);
+
+    
+    --wordle-grey: #{$wordle-grey};
+    --wordle-grey-dark: #{color.scale($wordle-grey, $lightness: -25%)};
+    --wordle-grey-light: #{color.scale($wordle-grey, $lightness: 15%)};
+    --wordle-yellow: #{$wordle-yellow};
+    --wordle-yellow-dark: #{color.scale($wordle-yellow, $lightness: -25%)};
+    --wordle-green: #{$wordle-green};
+    --wordle-green-dark: #{color.scale($wordle-green, $lightness: -25%)};
+}

@@ -1,0 +1,124 @@
+.wordle {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    align-items: center;
+}
+
+.grid-wrapper {
+    position: relative;
+    padding: 0.5rem;
+    margin: 0.5rem;
+}
+
+.try-again {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 0.25rem;
+}
+
+.row {
+    display: flex;
+
+    &.not-a-word {
+        animation-duration: 0.75s;
+        animation-name: shake;
+    }
+}
+
+.cell {
+    width: 4rem;
+    height: 4rem;
+    border: 2px solid var(--wordle-grey-dark);
+    border-radius: 0.25rem;
+    margin: 0.5rem;
+    display: flex;
+    font-size: 200%;
+    text-transform: capitalize;
+    align-items: center;
+    justify-content: center;
+
+    &.has-letter {
+        border-color: var(--wordle-grey-light);
+    }
+
+    &.incorrect {
+        background-color: var(--wordle-grey-dark);
+    }
+
+    &.wrong-position {
+        border-color: var(--wordle-yellow-dark);
+        background-color: var(--wordle-yellow);
+    }
+
+    &.correct {
+        border-color: var(--wordle-green-dark);
+        background-color: var(--wordle-green);
+    }
+}
+
+.keyboard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.keyboard-row {
+    display: flex;
+}
+
+.key {
+    padding: 1em;
+    margin: 0.25em;
+    width: 0.625em;
+    border-radius: 0.25rem;
+    height: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--wordle-grey-light);
+    cursor: pointer;
+
+    &.incorrect {
+        background-color: var(--wordle-grey-dark);
+    }
+
+    &.wrong-position {
+        background-color: var(--wordle-yellow);
+    }
+
+    &.correct {
+        background-color: var(--wordle-green);
+    }
+}
+.special-key {
+    width: #{0.625em * 3}
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(-25px);
+    }
+    20% {
+        transform: translateX(12.5px);
+    }
+    40% {
+        transform: translateX(-6.25px);
+    }
+    60% {
+        transform: translateX(3.125px);
+    }
+    80% {
+        transform: translateX(-1.5625px);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}

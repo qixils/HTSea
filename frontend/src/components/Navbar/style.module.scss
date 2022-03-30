@@ -1,0 +1,47 @@
+.navbar {
+    display: flex;
+    background-color: var(--bg-tertiary);
+}
+
+.main-link {
+    font-size: 200%;
+}
+
+.nav-link {
+    text-decoration: none;
+    padding: 1rem 1.5rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+}
+
+.user {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    padding: 0 1.5rem;
+    font-size: 125%;
+}
+
+.discriminator {
+    opacity: 0.625;
+}
+
+.avatar {
+    border-radius: 50%;
+    margin-right: 0.5em;
+}
+
+.diamonds {
+    margin-left: 0.5em;
+    display: flex;
+    align-items: center;
+}
+
+.diamond-icon {
+    margin-right: 0.25em;
+}
