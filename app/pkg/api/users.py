@@ -7,6 +7,7 @@ from fastapi.encoders import jsonable_encoder
 from ..dependencies import *
 
 import aiohttp
+import random
 import typing
 
 
@@ -33,6 +34,7 @@ async def retcookie():
 async def register(user_req: Request,
                    user_resp: Response,
                    http_client: aiohttp.ClientSession = Depends(httpClient),
+                   words: Wordlist = Depends(Wordlist),
                    code: typing.Optional[str] = None):
     if user_req.cookies.get("webToken"):
         user_resp.status_code = HTTPStatus.BAD_REQUEST
@@ -47,9 +49,10 @@ async def register(user_req: Request,
 
     # TODO: be more careful passing res into SQL
     res['minecraft_secret'] = gen_mc_secret()
+    res['wordle_word'] = random.choice(words.get_list())
     await db.execute("INSERT INTO users (snowflake, name, discriminator, avatar, accesstoken, refreshtoken, webToken,"
-                     " minecraftSecret) VALUES (:id, :username, :discriminator, :avatar, :accesstoken, "
-                     ":refreshtoken, :secret, :minecraft_secret) "
+                     " minecraftSecret, wordleWord) VALUES (:id, :username, :discriminator, :avatar, :accesstoken, "
+                     ":refreshtoken, :secret, :minecraft_secret, :wordle_word) "
                      "ON CONFLICT (snowflake)"
                      "DO UPDATE SET (name, discriminator, avatar, accesstoken, refreshtoken, webToken, minecraftSecret) = "
                      "(EXCLUDED.name, EXCLUDED.discriminator, EXCLUDED.avatar, EXCLUDED.accesstoken, EXCLUDED.refreshtoken,"

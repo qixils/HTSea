@@ -28,7 +28,7 @@ class Wordlist:
     def get_list(cls):
         if cls.wordlist is None:
             print(os.listdir())
-            with open("app/words.txt", "r") as words:
+            with open("words.txt", "r") as words:
                 cls.wordlist = words.read().split("\n")
         return cls.wordlist
 
