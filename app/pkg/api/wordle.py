@@ -25,7 +25,7 @@ def guessword(wword, wguess):
 
 @route.post("/guess")
 async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(Wordlist)):
-    user = get_session_data(user_req)
+    user = await get_session_data(user_req)
     if not user:
         # TODO proper response
         return "bad"
