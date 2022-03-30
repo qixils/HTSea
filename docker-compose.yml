@@ -1,0 +1,32 @@
+version: "3"
+networks:
+  net:
+    driver: bridge
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - MC_SECRET
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    networks:
+      - net
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile.db
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+    ports:
+      - "5432:5432"
+    networks:
+      - net
