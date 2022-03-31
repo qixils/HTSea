@@ -1,5 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap');
+
 .message-page {
+    font-family: Poppins, sans-serif;
     padding: 1em;
+    margin: -5px 50px;
     display: flex;
     align-items: start;
+    flex-direction: column;
+    width: 100%;
+}
+
+.message-page > * {
+    margin: 15px;
+}
+
+h1 {
+    font: 600 30px Poppins, sans-serif;
+    margin-bottom: 5px;
+}
+
+.author-header {
+    font: 300 17px / 21px Poppins, sans-serif;
+}
+
+a {
+    color: #2081e2;
+    text-decoration: none;
+}
+
+
+.nftbutton {
+    border-radius: 10px;
+    font: 600 15px Poppins;
+    padding: 10px;
+    width: 180px;
+    color: #2081e2;
+    outline: #2081e2 solid 2px;
+    transition: text-shadow 0.25s;
+}
+
+.nftbutton:hover {
+    text-shadow: #2081e2 0px 0px 5px;
 }

@@ -10,6 +10,7 @@ $avatar-margin-right: 0.5em;
 	flex-direction: column;
 	border-radius: 0.25rem;
 	border: 1px solid var(--border-light);
+	width: 100%;
 }
 
 .message.referenced {
