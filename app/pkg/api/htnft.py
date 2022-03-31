@@ -221,7 +221,7 @@ async def get_message(req: Request, resp: Response, message_id: int):
 
     return JSONResponse(content=jsonable_encoder(payload))
 
-@route.get("/messages/{message_id}/sell")
+@route.post("/messages/{message_id}/sell")
 async def sell_htnft(req: Request, resp: Response, message_id: int):
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
     if row is None:
@@ -255,7 +255,7 @@ async def sell_htnft(req: Request, resp: Response, message_id: int):
 
     return JSONResponse(content=jsonable_encoder({'success': True}))
 
-@route.get("/messages/{message_id}/cancel_sale")
+@route.post("/messages/{message_id}/cancel_sale")
 async def sell_htnft(req: Request, resp: Response, message_id: int):
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
     if row is None:
@@ -279,7 +279,7 @@ async def sell_htnft(req: Request, resp: Response, message_id: int):
 
     return JSONResponse(content=jsonable_encoder({'success': True}))
 
-@route.get("/messages/{message_id}/buy")
+@route.post("/messages/{message_id}/buy")
 async def buy_htnft(req: Request, resp: Response, message_id: int):
     async with db.transaction():
         row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
