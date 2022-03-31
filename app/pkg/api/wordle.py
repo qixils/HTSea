@@ -10,6 +10,7 @@ route = APIRouter(prefix="/api/wordle")
 
 COOLDOWN_PERIOD = datetime.timedelta(minutes=5)
 
+
 # copied from https://mathspp.com/blog/solving-wordle-with-python // RodrigoGS -- thanks!
 def guessword(wword, wguess):
     pool = collections.Counter(s for s, g in zip(wword, wguess) if s != g)
@@ -24,17 +25,22 @@ def guessword(wword, wguess):
             wscore.append("x")
     return "".join(wscore)
 
-'''Gets the Wordle info state for a given request/session, updating it if the cooldown period has passed'''
+
 async def get_wordle_info(user_req: Request, words: Wordlist) -> typing.Dict:
+    """
+    Gets the Wordle info state for a given request/session,
+    updating it if the cooldown period has passed
+    """
     user = await get_session_data(user_req)
     if not user:
         raise Exception("not logged in")
     secret = user['webtoken']
 
-    user = dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret", {"secret": secret}))
-    word = user['wordleword']
-    guesses = user['wordleguesses']
-    cooldown = user['wordlecooldown']
+    user = dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret",
+                                   {"secret": secret}))
+    word: str = user['wordleword']
+    guesses: typing.Collection[str] = user['wordleguesses']
+    cooldown: typing.Optional[datetime.datetime] = user['wordlecooldown']
 
     # reset game after timeout period
     if cooldown is not None and cooldown <= datetime.datetime.now():
@@ -43,12 +49,12 @@ async def get_wordle_info(user_req: Request, words: Wordlist) -> typing.Dict:
         guesses = []
         cooldown = None
         await db.execute("UPDATE users SET (wordleWord, wordleGuesses, wordleCooldown) ="
-                        "(:new_word, ARRAY[]::CHAR(5)[], NULL)"
-                        "WHERE webToken = :sess_token",
-                        {
-                            "sess_token": secret,
-                            "new_word": word
-                        })
+                         "(:new_word, ARRAY[]::CHAR(5)[], NULL)"
+                         "WHERE webToken = :sess_token",
+                         {
+                             "sess_token": secret,
+                             "new_word": word
+                         })
 
     data = {
         'secret': secret,
@@ -59,13 +65,15 @@ async def get_wordle_info(user_req: Request, words: Wordlist) -> typing.Dict:
     }
     return data
 
-'''Make the full Wordle info response-friendly'''
+
 def wordle_info_to_response(info: typing.Dict) -> typing.Dict:
+    """Make the full Wordle info response-friendly"""
     return {
         'guesses': info['guesses'],
         'cooldown': info['cooldown'],
         'diamonds': info['diamonds']
     }
+
 
 @route.post("/guess")
 async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(Wordlist)):
@@ -125,6 +133,7 @@ async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(
             'success': True,
             'new_state': wordle_info_to_response(info)
     }))
+
 
 @route.get("/info")
 async def wordle_info(user_req: Request, words: Wordlist = Depends(Wordlist)):

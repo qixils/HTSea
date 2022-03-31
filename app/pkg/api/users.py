@@ -22,7 +22,7 @@ async def startup():
 
 
 @route.get("/cookie")
-async def retcookie():
+async def retcookie():  # TODO: remove in production
     content = "<b>your mother was a hamster and your father smelt of elderberries</b>"
     response = fastapi.responses.HTMLResponse(content=content)
     response.set_cookie(key="session", value="AABBBCB")

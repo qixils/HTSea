@@ -73,6 +73,7 @@ def gen_csrf():
 def gen_mc_secret():
     return gen_csrf()
 
+
 def validate_internal_request(req: Request) -> typing.Optional[Response]:
     if 'Authorization' not in req.headers:
         return JSONResponse({'error': 'This internal endpoint requires a secret token.'},
@@ -81,6 +82,7 @@ def validate_internal_request(req: Request) -> typing.Optional[Response]:
         return JSONResponse({'error': 'The provided secret token is invalid.'},
                             HTTPStatus.FORBIDDEN)
     return None
+
 
 def gen_discord_oauth_payload(code: str, redirect_uri: str):
     return {
@@ -132,11 +134,13 @@ async def get_session_data(req: Request) -> typing.Optional[typing.Dict[str, typ
         return None
     return dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret", {"secret": secret}))
 
+
 async def get_user_data(user_id: int) -> typing.Optional[typing.Dict[str, typing.Any]]:
     user = await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": user_id})
     if user is None:
         return None
     return dict(user)
+
 
 async def validate_user(session_token: str, csrf_token: str = None):
     users = await db.fetch_one("SELECT * from users where webToken = :sess_token",
