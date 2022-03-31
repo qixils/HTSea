@@ -1,0 +1,60 @@
+.spoiler {
+	color: transparent;
+	background-color: var(--bg-tertiary);
+	border-radius: 0.25em;
+	cursor: pointer;
+
+	transition: background-color 0.125s;
+
+	&:hover {
+		background-color: var(--bg-secondary);
+	}
+
+	&.open {
+		color: var(--text);
+		/* background-color: col.$grey-dark; */
+
+		&:hover {
+			/* background-color: col.$grey; */
+		}
+	}
+}
+
+.code {
+	background-color: var(--bg-secondary);
+	border-radius: 0.25em;
+}
+
+.code-block {
+	background-color: var(--bg-secondary);
+	border-radius: 0.25em;
+	border: 1px solid var(--bg-tertiary);
+	padding: 0.25em;
+	margin: 0.25em 0;
+}
+
+.block-quote {
+	margin: 0;
+	padding-left: 0.5em;
+	border-left: 4px solid var(--border-light);
+}
+
+.mention {
+	color: var(--mention-fg);
+	background-color: var(--mention-bg);
+	border-radius: 0.25em;
+	padding: 0 0.125em;
+	font-weight: 600;
+
+	&.user, &.channel {
+		cursor: pointer;
+
+		&:hover {
+			color: var(--text);
+			background-color: var(--blue);
+		}
+
+		transition: all 0.125s ease;
+		transition-property: color, background-color;
+	}
+}

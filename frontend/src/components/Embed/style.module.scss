@@ -1,0 +1,129 @@
+.embed-wrapper {
+	max-width: 520px;
+	box-sizing: border-box;
+	border-left: 4px solid var(--bg-tertiary);
+	background-color: var(--bg-secondary);
+	border-radius: 4px;
+	display: inline-block;
+	font-size: 90%;
+}
+
+.embed-inner {
+	padding: .5rem 1rem 1rem .75rem;
+	display: inline-grid;
+	grid-template-rows: auto;
+	grid-template-columns: auto;
+
+	&.has-thumbnail {
+		grid-template-columns: auto min-content;
+	}
+}
+
+.embed-provider, .embed-author, .embed-title, .embed-description, .embed-fields, .embed-image-container, .embed-footer {
+	min-width: 0;
+}
+
+.embed-provider {
+	margin-top: 8px;
+	font-size: 0.75em;
+	line-height: 1em;
+	grid-column: 1 / 1;
+}
+
+.embed-author {
+	display: flex;
+	align-items: center;
+	font-weight: 600;
+	margin-top: 8px;
+	grid-column: 1 / 1;
+}
+
+.embed-author-icon {
+	margin-right: 8px;
+	width: 24px;
+	height: 24px;
+	object-fit: contain;
+	border-radius: 50%;
+}
+
+.embed-author-name-link {
+	color: white;
+}
+
+.embed-title {
+	margin-top: 8px;
+	font-weight: 600;
+	color: white;
+	display: inline-block;
+	grid-column: 1 / 1;
+}
+
+.embed-description {
+	margin-top: 8px;
+	font-size: 0.875em;
+	line-height: 1.125em;
+	grid-column: 1 / 1;
+}
+
+.embed-fields {
+	display: grid;
+	grid-column: 1 / 1;
+	margin-top: 8px;
+	grid-gap: 8px;
+}
+
+.embed-field {
+	font-size: 0.875em;
+	line-height: 1.125em;
+	min-width: 0;
+}
+
+.embed-field-name {
+	color: white;
+	font-weight: 600;
+	margin-bottom: 2px;
+}
+
+.embed-image-container {
+	margin-top: 16px;
+}
+
+.has-thumbnail .embed-image-container {
+	grid-column: 1 / 3;
+}
+
+.embed-thumbnail-container {
+	grid-row: 1 / 8;
+	grid-column: 2 / 2;
+	margin-left: 16px;
+	margin-top: 8px;
+	justify-self: end;
+}
+
+.embed-image, .embed-thumbnail {
+	display: block;
+	border-radius: 4px;
+}
+
+.embed-footer {
+	display: flex;
+	align-items: center;
+	grid-column: 1 / 1;
+	grid-row: auto / auto;
+	margin-top: 8px;
+	font-size: 0.75em;
+	line-height: 1em;
+	font-weight: 500;
+}
+
+.has-thumbnail .embed-footer {
+	grid-column: 1 / 3;
+}
+
+.embed-footer-icon {
+	margin-right: 8px;
+	width: 20px;
+	height: 20px;
+	object-fit: contain;
+	border-radius: 50%;
+}

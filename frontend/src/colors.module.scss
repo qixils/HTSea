@@ -8,7 +8,9 @@ $wordle-green: rgb(20, 126, 82);
     --bg-secondary: rgb(38, 38, 46);
     --bg-tertiary: rgb(30, 28, 34);
     --text: rgb(223, 221, 217);
+    --text-detail: #8e9297;
 
+    --border-light: #{$wordle-grey};
     
     --wordle-grey: #{$wordle-grey};
     --wordle-grey-dark: #{color.scale($wordle-grey, $lightness: -25%)};
@@ -17,4 +19,16 @@ $wordle-green: rgb(20, 126, 82);
     --wordle-yellow-dark: #{color.scale($wordle-yellow, $lightness: -25%)};
     --wordle-green: #{$wordle-green};
     --wordle-green-dark: #{color.scale($wordle-green, $lightness: -25%)};
+
+    --tooltip: #111;
+
+
+    --blue: hsl(235, 85.6%, 64.7%);
+    --blue-secondary: hsl(235, 51.4%, 52.4%);
+    --blue-tertiary: hsl(235, 46.7%, 44.1%);
+    --red: hsl(359, 82.6%, 59.4%);
+    --red-secondary: hsl(359, 56.7%, 48%);
+    --red-tertiary: hsl(359, 56.3%, 40.4%);
+    --mention-bg: hsla(235, 85.6%, 64.7%, 0.3);
+    --mention-fg: hsl(236, 83.3%, 92.9%);
 }
