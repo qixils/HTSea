@@ -9,7 +9,8 @@ import hashlib
 import time
 import os
 
-from fastapi import Request
+from fastapi import Request, Response
+from fastapi.responses import JSONResponse
 
 db = databases.Database("postgresql://{}@db:5432/{}".format(
     os.getenv("POSTGRES_USER"),
@@ -72,6 +73,14 @@ def gen_csrf():
 def gen_mc_secret():
     return gen_csrf()
 
+def validate_internal_request(req: Request) -> typing.Optional[Response]:
+    if 'Authorization' not in req.headers:
+        return JSONResponse({'error': 'This internal endpoint requires a secret token.'},
+                            HTTPStatus.UNAUTHORIZED)
+    if req.headers['Authorization'] != "Bearer " + os.getenv('INTERNAL_API_SECRET'):
+        return JSONResponse({'error': 'The provided secret token is invalid.'},
+                            HTTPStatus.FORBIDDEN)
+    return None
 
 def gen_discord_oauth_payload(code: str, redirect_uri: str):
     return {

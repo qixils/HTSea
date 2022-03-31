@@ -92,20 +92,9 @@ async def register_mc(user_req: Request,
     response.set_cookie(key="webToken", value=res['secret'])
     return response
 
-
-def validate_mc_request(req: Request) -> typing.Optional[Response]:
-    if 'Authorization' not in req.headers:
-        return JSONResponse({'error': 'This internal endpoint requires a secret token.'},
-                            HTTPStatus.UNAUTHORIZED)
-    if req.headers['Authorization'] != "Bearer " + os.getenv('MC_SECRET'):
-        return JSONResponse({'error': 'The provided secret token is invalid.'},
-                            HTTPStatus.FORBIDDEN)
-    return None
-
-
 @route.get("/mc/secret")
 async def get_secret(req: Request):
-    if validate_resp := validate_mc_request(req):
+    if validate_resp := validate_internal_request(req):
         return validate_resp
     if 'uuid' not in req.query_params:
         return JSONResponse({'error': 'The uuid query parameter is required.'},
@@ -123,7 +112,7 @@ async def get_secret(req: Request):
 
 @route.get("/mc/profile")
 async def get_profile_by_uuid(req: Request):
-    if validate_resp := validate_mc_request(req):
+    if validate_resp := validate_internal_request(req):
         return validate_resp
     if 'uuid' not in req.query_params:
         return JSONResponse({'error': 'The uuid query parameter is required.'},
@@ -138,7 +127,7 @@ async def get_profile_by_uuid(req: Request):
 
 @route.post("/mc/add_diamonds")
 async def add_diamonds(req: Request):
-    if validate_resp := validate_mc_request(req):
+    if validate_resp := validate_internal_request(req):
         return validate_resp
     payload = await req.json()
     if 'uuid' not in payload:
