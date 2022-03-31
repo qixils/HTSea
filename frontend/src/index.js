@@ -12,6 +12,7 @@ import {Provider} from 'react-redux';
 import App from './App';
 import Navbar from './components/Navbar/Navbar';
 import Wordle from './components/Wordle/Wordle';
+import Message from './components/Message/Message';
 
 import rootReducer from './redux/reducer';
 const store = createStore(rootReducer(), applyMiddleware(thunkMiddleware));
@@ -25,6 +26,8 @@ ReactDOM.render(
           <Routes>
             <Route path="/" element={<App />} /> 
             <Route path="wordle" element={<Wordle />} /> 
+            <Route path="message/:id" element={<Message />} /> 
+            {/* <Route path="user/:id" element={<Message />} />  */}
           </Routes>
         </div>
       </BrowserRouter>
