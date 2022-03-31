@@ -42,7 +42,7 @@ async def register(user_req: Request,
 
     try:
         # TODO: janky way to set a redirect URI
-        res = await get_user_data(http_client, code, os.getenv("API_URL_PREFIX") + user_req.scope['path'])
+        res = await get_user_auth_data(http_client, code, os.getenv("API_URL_PREFIX") + user_req.scope['path'])
     except ApiException as e:
         user_resp.status_code = e.status_code
         return e.message
@@ -76,7 +76,7 @@ async def register_mc(user_req: Request,
 
     try:
         # TODO: janky way to set a redirect URI
-        res = await get_user_data(http_client, code, os.getenv("API_URL_PREFIX") + user_req.scope['path'])
+        res = await get_user_auth_data(http_client, code, os.getenv("API_URL_PREFIX") + user_req.scope['path'])
     except ApiException as e:
         user_resp.status_code = e.status_code
         return e.message

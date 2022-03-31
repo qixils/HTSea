@@ -33,3 +33,19 @@ services:
       - "5432:5432"
     networks:
       - net
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - CLIENT_ID
+      - BOT_TOKEN
+      - BOT_GUILD
+      - INTERNAL_API_SECRET
+    depends_on:
+      - db
+    networks:
+      - net

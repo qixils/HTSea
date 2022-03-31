@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from pkg.dependencies import *
 
+from pkg.api import htnft
 from pkg.api import users
 from pkg.api import wordle
 
@@ -18,6 +19,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.include_router(htnft.route)
 app.include_router(users.route)
 app.include_router(wordle.route)
 

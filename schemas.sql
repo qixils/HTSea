@@ -24,16 +24,12 @@ CREATE TABLE IF NOT EXISTS QUEUE (
 CREATE TABLE IF NOT EXISTS htnfts (
     messageSnowflake bigint PRIMARY KEY NOT NULL,
     channelSnowflake bigint NOT NULL,
-    channelName VARCHAR(100),
     guildSnowflake bigint NOT NULL,
-    authorSnowflake bigint NOT NULL references users(snowflake),
-    authorName VARCHAR(32) NOT NULL,
-    authorAvatar VARCHAR(128),
+    authorSnowflake bigint NOT NULL,
     content VARCHAR(4000),
     mintedAt timestamp NOT NULL,
     currentPrice NUMERIC(8,3),
-    reactions bigint[],
-    embeds bigint[],
+    embeds json[],
     attachments bigint[]
 );
 
@@ -63,29 +59,36 @@ CREATE TABLE IF NOT EXISTS offers (
     timestamp timestamp
 );
 
-CREATE TABLE IF NOT EXISTS snapshots (
-    hash uuid PRIMARY KEY,
-    snowflake bigint,
-    authorName VARCHAR(32),
-    authorNickname VARCHAR(32),
-    authorDiscrim integer
-);
---  ^^^ hash is md5(all other snapshot data)
---  snapshots are frozen user data attached to a tx or htnft (for display purposes)
-
-CREATE TABLE IF NOT EXISTS reactions (
-    id bigint NOT NULL references htnfts(messageSnowflake),
-    reactor bigint NOT NULL references users(snowflake),
-    snapshot uuid references snapshots(hash)
-);
---  ^^^ id is id of the reacted-to message
-
-CREATE TABLE IF NOT EXISTS attachments (
-    id bigint NOT NULL references htnfts(messageSnowflake),
-    urls text[]
+CREATE TABLE IF NOT EXISTS referenced_users (
+    nftID bigint NOT NULL references htnfts(messageSnowflake),
+    snowflake bigint NOT NULL,
+    name VARCHAR(32) NOT NULL,
+    nickname VARCHAR(32),
+    discriminator integer NOT NULL,
+    avatar VARCHAR(128) -- null if not the message author
 );
 
-CREATE TABLE IF NOT EXISTS embeds (
-    id bigint NOT NULL references htnfts(messageSnowflake),
-    data json[]
+CREATE TABLE IF NOT EXISTS referenced_channels (
+    nftID bigint NOT NULL references htnfts(messageSnowflake),
+    snowflake bigint NOT NULL,
+    type int NOT NULL,
+    name VARCHAR(100) NOT NULL -- yes, channel names really can be that long
+);
+
+CREATE TABLE IF NOT EXISTS referenced_roles (
+    nftID bigint NOT NULL references htnfts(messageSnowflake),
+    snowflake bigint NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    color integer NOT NULL,
+    position integer NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS referenced_attachments (
+    nftID bigint NOT NULL references htnfts(messageSnowflake),
+    snowflake bigint NOT NULL,
+    url text NOT NULL,
+    name text,
+    height int,
+    width int,
+    spoiler boolean
 );

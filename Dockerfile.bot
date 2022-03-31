@@ -1,0 +1,10 @@
+# syntax=docker/dockerfile:1
+
+FROM node:17-alpine
+WORKDIR /app
+COPY bot/package.json bot/package-lock.json vendor/wait-for ./
+RUN npm ci
+COPY bot .
+
+# Wait for postgres to initialize
+CMD [ "sh", "-c", "exec ./wait-for db:5432 -- npm start" ]

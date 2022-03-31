@@ -92,7 +92,7 @@ def gen_discord_oauth_payload(code: str, redirect_uri: str):
     }
 
 
-async def get_user_data(http_client: aiohttp.ClientSession,
+async def get_user_auth_data(http_client: aiohttp.ClientSession,
                         code: str,
                         redirect_uri: str) -> typing.Dict[str, typing.Any]:
     if code is None:
@@ -132,6 +132,11 @@ async def get_session_data(req: Request) -> typing.Optional[typing.Dict[str, typ
         return None
     return dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret", {"secret": secret}))
 
+async def get_user_data(user_id: int) -> typing.Optional[typing.Dict[str, typing.Any]]:
+    user = await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": user_id})
+    if user is None:
+        return None
+    return dict(user)
 
 async def validate_user(session_token: str, csrf_token: str = None):
     users = await db.fetch_one("SELECT * from users where webToken = :sess_token",
