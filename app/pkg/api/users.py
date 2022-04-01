@@ -11,6 +11,7 @@ import random
 import typing
 
 
+base_route = APIRouter(prefix="/api")
 route = APIRouter(prefix="/api/users")
 
 httpClient = HttpClient()
@@ -164,15 +165,16 @@ async def get_session(req: Request):
         res_data['user'] = user
     return JSONResponse(content=jsonable_encoder(res_data))
 
-@route.get("/{user_id}")
-async def get_user(req: Request, resp: Response, user_id: int):
+
+@base_route.get("/user/{user_id}")
+async def get_user(user_id: int):
     user = await get_user_profile_data(user_id)
     if user is None:
         return JSONResponse(content=jsonable_encoder({
             'success': False,
             'error': 'Not Found'
         }), status_code=404)
-    
+
     user['htnftIDs'] = [str(row['messagesnowflake']) for row in
         await db.fetch_all("SELECT messageSnowflake from htnfts WHERE currentOwner = :id ORDER BY mintedAt", {'id': user_id})]
 

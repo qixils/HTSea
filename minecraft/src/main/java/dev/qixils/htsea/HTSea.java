@@ -59,8 +59,14 @@ public final class HTSea extends JavaPlugin implements Listener {
 	@Override
 	public void onLoad() {
 		saveDefaultConfig();
+	}
 
-		// command framework
+	@SuppressWarnings("HttpUrlsUsage")
+	@Override
+	public void onEnable() {
+		// register listener
+		Bukkit.getPluginManager().registerEvents(this, this);
+		// init command framework
 		try {
 			commandManager = PaperCommandManager.createNative(
 					this,
@@ -80,17 +86,14 @@ public final class HTSea extends JavaPlugin implements Listener {
 			getSLF4JLogger().warn("Failed to register parts of the command manager", e);
 		}
 
-		// commands
+		// init commands
 		commandManager.command(
 				commandManager.commandBuilder("vault", ArgumentDescription.of("Opens the vault menu for managing your wallet"))
 						.senderType(Player.class)
 						.handler(ctx -> new MainMenu(this).open((Player) ctx.getSender()))
 		);
-	}
 
-	@SuppressWarnings("HttpUrlsUsage")
-	@Override
-	public void onEnable() {
+		// load config
 		FileConfiguration config = getConfig();
 		// parse api secret
 		apiSecret = config.getString("api-secret");
@@ -129,7 +132,7 @@ public final class HTSea extends JavaPlugin implements Listener {
 										  @Nullable Consumer<HttpURLConnection> connConsumer) {
 		URL url;
 		try {
-			url = new URL("https", apiHost, file);
+			url = new URL("https", apiHost, '/' + file);
 		} catch (MalformedURLException e) {
 			throw new IllegalStateException("Failed to create API URL", e);
 		}
@@ -216,17 +219,7 @@ public final class HTSea extends JavaPlugin implements Listener {
 				"<color:yellow>You are playing on the <color:gold>HTSea Minecraft Server</color>.</color>\n" +
 				"<color:aqua>Use <color:blue>/vault</color> to deposit and withdrawal Diamonds.</color>"));
 		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-			SecretResponse response = request(SecretResponse.class, "api/users/mc/secret", "GET", false, conn -> {
-				conn.setDoOutput(true);
-				try {
-					DataOutputStream out = new DataOutputStream(conn.getOutputStream());
-					out.writeBytes("uuid=" + player.getUniqueId());
-					out.flush();
-					out.close();
-				} catch (IOException e) {
-					throw new RuntimeException("Failed to set query string", e);
-				}
-			});
+			SecretResponse response = request(SecretResponse.class, "api/users/mc/secret?uuid=" + player.getUniqueId(), "GET", false, null);
 			if (response == null) {
 				player.sendMessage(WELCOME_ERROR);
 				return;

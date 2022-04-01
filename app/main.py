@@ -44,15 +44,6 @@ async def startup():
     # INSERT INTO queue (mcuuid, secret) VALUES ('a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11', 'abcde');
 
 
-# TODO remove test endpoints
-@app.on_event("shutdown")
-async def shutdown():
-    await db.disconnect()
-
-@app.get("/exe/{cmd}")
-async def exceut(cmd: str):
-    return await db.execute(cmd)
-
 # http://localhost:8000/api/users/connect?uuid=a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11&secret=abcde
 # upon generation of the connect link by the plugin, the plugin inserts into table `queue` the uuid and random secret
 @app.get("/api/users/connect")
