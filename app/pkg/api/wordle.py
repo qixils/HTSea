@@ -8,7 +8,8 @@ import random
 
 route = APIRouter(prefix="/api/wordle")
 
-COOLDOWN_PERIOD = datetime.timedelta(minutes=5)
+PAYMENT_TABLE = [1, 1/2, 1/5, 1/10, 1/20, 1/50]
+COOLDOWN_PERIOD = datetime.timedelta(minutes=3)
 
 
 # copied from https://mathspp.com/blog/solving-wordle-with-python // RodrigoGS -- thanks!
@@ -99,7 +100,6 @@ async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(
     result = guessword(word, guess)
     if result == "ggggg":
         # they won :) give them the payout
-        payment_table = [1/2, 1/5, 1/10, 1/20, 1/50, 1/100]
         cooldown = datetime.datetime.now() + COOLDOWN_PERIOD
         await db.execute("UPDATE users SET (diamonds, wordleCooldown, wordleGuesses) = "
                         "(diamonds + :payment, :timestamp, array_append(wordleGuesses, :guess))"
@@ -108,7 +108,7 @@ async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(
                             "sess_token": info['secret'],
                             "guess": guess,
                             "timestamp": cooldown,
-                            "payment": payment_table[len(guesses)]
+                            "payment": PAYMENT_TABLE[len(guesses)]
                         })
     elif len(guesses) >= 5:
         # they lost :(
