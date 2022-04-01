@@ -162,12 +162,7 @@ public final class MainMenu implements IInventory {
 		// actual menu
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 			// get profile
-			ProfileResponse profile = plugin.request(ProfileResponse.class,
-					"api/users/mc/profile?uuid=" + player.getUniqueId(),
-					"GET",
-					true,
-					null
-			);
+			ProfileResponse profile = plugin.getProfile(player);
 			// cancel loading animation
 			anim.cancel();
 			contents.fill(ClickableItem.empty(new ItemStack(Material.AIR)));

@@ -12,14 +12,19 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,6 +35,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public final class HTSea extends JavaPlugin implements Listener {
@@ -42,6 +50,8 @@ public final class HTSea extends JavaPlugin implements Listener {
 					"Some services may not function as expected. " +
 					"We apologize for the inconvenience."));
 	private static final Gson GSON = new GsonBuilder().serializeNulls().create();
+	private final Set<UUID> playersInformed = new HashSet<>();
+	private final MiniMessage miniMessage = MiniMessage.miniMessage();
 	private @Nullable String apiSecret;
 	private @Nullable String apiHost;
 	private @Nullable PaperCommandManager<CommandSender> commandManager;
@@ -111,7 +121,7 @@ public final class HTSea extends JavaPlugin implements Listener {
 	 * @param <R>           the expected response type
 	 * @return              the response from the API, or null if an error occurred
 	 */
-	@Nullable
+	@Contract("_, _, _, true, _ -> !null; _, _, _, false, _ -> _")
 	public <R extends Response> R request(@NotNull Class<R> responseClass,
 										  @NotNull String file,
 										  @NotNull String requestMethod,
@@ -136,11 +146,6 @@ public final class HTSea extends JavaPlugin implements Listener {
 				connConsumer.accept(conn);
 
 			// get response
-			int status = conn.getResponseCode();
-			if (status == HttpURLConnection.HTTP_FORBIDDEN || status == HttpURLConnection.HTTP_UNAUTHORIZED) {
-				getSLF4JLogger().error("The provided API secret is invalid. Error code: " + status);
-				return null;
-			}
 			BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			String inputLine;
 			StringBuilder content = new StringBuilder();
@@ -148,16 +153,60 @@ public final class HTSea extends JavaPlugin implements Listener {
 				content.append(inputLine);
 			in.close();
 			R response = GSON.fromJson(content.toString(), responseClass);
+			int status = conn.getResponseCode();
+			response.status = status;
+
+			// handle response
+			if (status == HttpURLConnection.HTTP_FORBIDDEN || status == HttpURLConnection.HTTP_UNAUTHORIZED) {
+				getSLF4JLogger().error("The provided API secret is invalid. Error code: " + status);
+				return allowErrors ? response : null;
+			}
 			if (!allowErrors && (status != HttpURLConnection.HTTP_OK || response.hasError())) {
 				getSLF4JLogger().warn("Failed to get data. Error: " + status + ' ' + response.error);
 				return null;
 			}
-			response.status = status;
 			return response;
 		} catch (IOException e) {
 			getSLF4JLogger().error("Failed to open connection to API", e);
+			if (allowErrors) {
+				try {
+					R response = responseClass.getDeclaredConstructor().newInstance();
+					response.error = e.getMessage();
+					response.status = HttpURLConnection.HTTP_INTERNAL_ERROR;
+				} catch (Exception ignored) {
+				}
+			}
 			return null;
 		}
+	}
+
+	/**
+	 * Fetches a user's profile from the API.
+	 * The profile object may contain {@link ProfileResponse#hasError() an error}.
+	 *
+	 * @param uuid the UUID of the user
+	 * @return     the user's profile
+	 */
+	@NotNull
+	public ProfileResponse getProfile(UUID uuid) {
+		return request(ProfileResponse.class,
+				"api/users/mc/profile?uuid=" + uuid,
+				"GET",
+				true,
+				null
+		);
+	}
+
+	/**
+	 * Fetches a user's profile from the API.
+	 * The profile object may contain {@link ProfileResponse#hasError() an error}.
+	 *
+	 * @param player the player to fetch the profile for
+	 * @return       the user's profile
+	 */
+	@NotNull
+	public ProfileResponse getProfile(OfflinePlayer player) {
+		return getProfile(player.getUniqueId());
 	}
 
 	@EventHandler
@@ -180,13 +229,8 @@ public final class HTSea extends JavaPlugin implements Listener {
 				return;
 			}
 			if (!response.hasData()) {
-				ProfileResponse profile = request(ProfileResponse.class,
-						"api/users/mc/profile?uuid=" + player.getUniqueId(),
-						"GET",
-						true,
-						null
-				);
-				if (profile == null || profile.hasError() || !profile.hasData()) {
+				ProfileResponse profile = getProfile(player);
+				if (profile.hasError() || !profile.hasData()) {
 					player.sendMessage(WELCOME_ERROR);
 					return;
 				}
@@ -205,7 +249,21 @@ public final class HTSea extends JavaPlugin implements Listener {
 		});
 	}
 
-	// TODO add congratulatory message for picking up a diamond if it's their first time doing it
-	//  (since server startup) and their balance is 0 to inform them of the /vault command
-	//  or add another parameter to the database (meh)
+	// inform players about the /vault command when they pick up a diamond for the first time
+	// (and their balance is 0)
+	@EventHandler
+	public void onPickupDiamond(EntityPickupItemEvent event) {
+		if (!(event.getEntity() instanceof Player player))
+			return;
+		if (playersInformed.contains(player.getUniqueId()))
+			return;
+		if (event.getItem().getItemStack().getType() != Material.DIAMOND)
+			return;
+		playersInformed.add(player.getUniqueId());
+		if (getProfile(player).getDiamonds() > 0)
+			return;
+		player.sendMessage(miniMessage.deserialize("<color:green>You have picked up a Diamond! " +
+				"You can now use <color:dark_green>/vault</color> to deposit it into your account. " +
+				"This will allow you to spend your Diamonds on the <color:aqua>HTSea</color> storefront."));
+	}
 }
