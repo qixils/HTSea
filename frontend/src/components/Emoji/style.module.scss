@@ -1,0 +1,20 @@
+.emoji-container {
+	display: inline-block;
+	position: relative;
+	cursor: pointer;
+}
+
+.emoji {
+	width: 1.375em;
+	height: 1.375em;
+	vertical-align: bottom;
+	object-fit: contain;
+}
+
+.reaction-emoji {
+	width: 1rem;
+	height: 1rem;
+	margin: 0.125rem 0;
+	min-width: auto;
+	min-height: auto;
+}

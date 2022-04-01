@@ -1,0 +1,34 @@
+.attachment {
+	display: flex;
+	margin: 0.25em 0;
+}
+
+.attachment-file {
+	display: flex;
+	flex-direction: column;
+	margin-right: auto;
+	padding: 0.5em;
+	border-radius: 0.25em;
+	background-color: var(--bg-secondary);
+	border: 1px solid var(--bg-tertiary);
+}
+
+.attachment-filename {
+	display: flex;
+	align-items: center;
+}
+
+.attachment-image {
+	border-radius: 0.25em;
+	cursor: pointer;
+}
+
+.attachment-size {
+	font-size: 90%;
+	color: var(--text-detail);
+	margin-left: 0.5em;
+}
+
+.attachment-audio {
+	margin-top: 0.5em;
+}

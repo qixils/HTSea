@@ -10,6 +10,7 @@ import thunkMiddleware from 'redux-thunk';
 import {Provider} from 'react-redux';
 
 import App from './App';
+import MessagePage from './components/MessagePage/MessagePage';
 import Navbar from './components/Navbar/Navbar';
 import Wordle from './components/Wordle/Wordle';
 
@@ -25,6 +26,7 @@ ReactDOM.render(
           <Routes>
             <Route path="/" element={<App />} /> 
             <Route path="wordle" element={<Wordle />} /> 
+            <Route path="messages/:id" element={<MessagePage />} />
           </Routes>
         </div>
       </BrowserRouter>

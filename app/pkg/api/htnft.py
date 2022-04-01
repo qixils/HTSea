@@ -1,6 +1,7 @@
 import datetime
 from http import HTTPStatus
 from uuid import uuid4
+import json
 
 import fastapi
 from fastapi import APIRouter, Depends, Request, Response
@@ -85,7 +86,7 @@ async def mint_htnft(req: Request,
                             'author_snowflake': int(data['message']['authorID']),
                             'content': data['message']['content'],
                             'minted_at': mint_time,
-                            'embeds': data['message']['embeds'],
+                            'embeds': [json.dumps(embed) for embed in data['message']['embeds']],
                             'attachments': [int(attachment_id) for attachment_id in data['message']['attachments']]
                         })
         
