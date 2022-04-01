@@ -5,19 +5,17 @@ import {useCallback} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {useParams, Link} from 'react-router-dom';  
 import cls from 'classnames';
-import Popup from 'reactjs-popup';
-
 import MessageList from '../MessageList/MessageList';
 
 import {MESSAGE_IDLE, getMessage, MESSAGE_UPDATING, MESSAGE_SUCCESS} from '../../redux/message';
 
 function Button(props) {
-    return <Popup trigger={<button 
-        className={cls(style.nftbutton, {[style.nbb]: props.invert, [style.nbw]: !props.invert})}>
-            {props.content}
-        </button>} modal>
-            {props.children}
-        </Popup>;
+    return (<button 
+            className={cls(style.nftbutton, {[style.nbb]: props.invert, [style.nbw]: !props.invert})}
+            onClick={props.onClick}
+            >
+                {props.content}
+        </button>);
 }
 
 function Price(props) {
@@ -42,8 +40,8 @@ function BuyButton(props) {
     }
         <div className={style["nftbutton-wrapper"]}>
             {(msg.currentPrice != null) ? 
-            <Button invert={true} onClick={()=>{}} content="Buy now" /> : null}
-            <Button onClick={()=>{}} content="Make offer" />
+            <Button invert={true} content="Buy now" /> : null}
+            <Button content="Make offer" />
         </div>
     </div>;
 }
