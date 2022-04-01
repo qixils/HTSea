@@ -4,7 +4,7 @@ import {Component} from 'react';
 import {connect} from 'react-redux';
 import classNames from 'classnames';
 
-import {getWordleInfo, guess, WORDLE_FAILURE, WORDLE_IDLE, WORDLE_UPDATING} from '../../redux/wordle';
+import {getWordleInfo, guess, WORDLE_ERROR, WORDLE_IDLE, WORDLE_UPDATING} from '../../redux/wordle';
 
 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 const alphabet = new Set(letters);
@@ -200,9 +200,9 @@ class Wordle extends Component {
                     >{letter}</div>
                 )
             }
-            const notAWord = this.props.wordle.status === WORDLE_FAILURE &&
-                this.props.wordle.failure === 'NOT_A_WORD' &&
-                i === guesses.length &&
+            const notAWord = this.props.wordle.status === WORDLE_ERROR &&
+                this.props.wordle.error.type === 'NOT_A_WORD' &&
+                i === this.props.wordle.guesses.length &&
                 this.state.guess === this.props.wordle.guess;
             rows.push(
                 <div className={classNames(style.row, {[style['not-a-word']]: notAWord})} key={notAWord ? Math.random() : i}>

@@ -8,9 +8,10 @@ export const WORDLE_FAILURE = 'WORDLE_FAILURE';
 // used for unexpected failure modes
 export const WORDLE_ERROR = 'WORDLE_ERROR';
 
-function wordleUpdating() {
+function wordleUpdating(guess) {
     return {
-        type: WORDLE_UPDATING
+        type: WORDLE_UPDATING,
+        guess
     }
 }
 
@@ -23,11 +24,10 @@ function wordleSuccess({cooldown, guesses, diamonds}) {
     }
 }
 
-function wordleFailure(failure, guess) {
+function wordleFailure(failure) {
     return {
         type: WORDLE_FAILURE,
-        failure,
-        guess
+        failure
     }
 }
 
@@ -50,7 +50,8 @@ const wordleReducer = (state, action) => {
                 ...state,
                 wordle: {
                     ...state.wordle,
-                    status: action.type
+                    status: action.type,
+                    guess: action.guess
                 }
             }
         }
@@ -73,8 +74,7 @@ const wordleReducer = (state, action) => {
                 wordle: {
                     ...state.wordle,
                     status: action.type,
-                    failure: action.failure,
-                    guess: action.guess
+                    failure: action.failure
                 }
             }
         }
@@ -104,7 +104,7 @@ const getWordleInfo = dispatch => {
 };
 
 const guess = (dispatch, value) => {
-    dispatch(wordleUpdating());
+    dispatch(wordleUpdating(value));
     api('/api/wordle/guess', {
         method: 'post',
         params: {
@@ -115,7 +115,7 @@ const guess = (dispatch, value) => {
             if (res.success) {
                 dispatch(wordleSuccess(res.new_state, value));
             } else {
-                dispatch(wordleFailure(res.error, value));
+                dispatch(wordleFailure(res.error));
             }
         })
         .catch(err => {
