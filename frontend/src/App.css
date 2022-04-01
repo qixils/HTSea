@@ -1,9 +1,19 @@
-.App {
+.App, .AppContent {
   display: flex;
   flex: 1 1 auto;
+  text-align: center;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+.AppContent {
+  width: 100%;
+  max-width: 1020px;
+}
+
+.AppContent p {
+  margin-bottom: 40px;
 }
 
 h1 {
