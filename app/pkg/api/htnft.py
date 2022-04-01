@@ -153,6 +153,12 @@ async def mint_htnft(req: Request,
         'cost': MINT_COST
     }))
 
+async def get_current_owner_id(htnft_id: int) -> int:
+    row = await db.fetch_one("SELECT * FROM transactions WHERE message = :id ORDER BY timestamp DESC", {"id": htnft_id})
+    if row is None:
+        raise Exception("HTNFT {} does not exist", htnft_id)
+    return row['buyer']
+
 @route.get("/messages/{message_id}")
 async def get_message(req: Request, resp: Response, message_id: int):
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
@@ -192,6 +198,8 @@ async def get_message(req: Request, resp: Response, message_id: int):
         'spoiler': attachment['spoiler']
     } for attachment in await db.fetch_all("SELECT * from referenced_attachments WHERE nftid = :id", {'id': message_id})}
 
+    current_owner_id = await get_current_owner_id(message_id)
+    current_owner_profile = await get_user_profile_data(current_owner_id)
     message = {
         'messageID': str(row['messagesnowflake']),
         'channelID': str(row['channelsnowflake']),
@@ -200,6 +208,7 @@ async def get_message(req: Request, resp: Response, message_id: int):
         'content': row['content'],
         'mintedAt': None if row['mintedat'] is None else row['mintedat'].timestamp(),
         'currentPrice': row['currentprice'],
+        'currentOwner': current_owner_profile,
         'embeds': [json.loads(embed) for embed in row['embeds']],
         'attachments': [str(attachment_id) for attachment_id in row['attachments']]
     }
@@ -214,3 +223,112 @@ async def get_message(req: Request, resp: Response, message_id: int):
     }
 
     return JSONResponse(content=jsonable_encoder(payload))
+
+@route.post("/messages/{message_id}/sell")
+async def sell_htnft(req: Request, resp: Response, message_id: int):
+    row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
+    if row is None:
+        return JSONResponse(content=jsonable_encoder({
+            'success': False,
+            'error': 'Not Found'
+        }), status_code=404)
+    
+    current_owner = await get_current_owner_id(message_id)
+    user = await get_session_data(req)
+    if not user:
+        raise Exception("not logged in")
+    if current_owner != user['snowflake']:
+        return JSONResponse(content=jsonable_encoder({
+            'success': False,
+            'error': 'Forbidden'
+        }), status_code=403)
+
+    data = await req.json()
+    if 'price' not in data or not isinstance(data['price'], int) or data['price'] < 0:
+        return JSONResponse(content=jsonable_encoder({
+            'success': False,
+            'error': 'Bad Request'
+        }), status_code=400)
+    
+    await db.execute("UPDATE htnfts SET currentPrice = :price "
+                    "WHERE messageSnowflake = :id",
+                    {
+                        'price': data['price'],
+                        'id': message_id
+                    })
+
+    return JSONResponse(content=jsonable_encoder({'success': True}))
+
+@route.post("/messages/{message_id}/cancel_sale")
+async def cancel_htnft_sale(req: Request, resp: Response, message_id: int):
+    row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
+    if row is None:
+        return JSONResponse(content=jsonable_encoder({
+            'success': False,
+            'error': 'Not Found'
+        }), status_code=404)
+    
+    current_owner = await get_current_owner_id(message_id)
+    user = await get_session_data(req)
+    if not user:
+        raise Exception("not logged in")
+    if current_owner != user['snowflake']:
+        return JSONResponse(content=jsonable_encoder({
+            'success': False,
+            'error': 'Forbidden'
+        }), status_code=403)
+    
+    await db.execute("UPDATE htnfts SET currentPrice = NULL "
+                    "WHERE messageSnowflake = :id", {'id': message_id})
+
+    return JSONResponse(content=jsonable_encoder({'success': True}))
+
+@route.post("/messages/{message_id}/buy")
+async def buy_htnft(req: Request, resp: Response, message_id: int):
+    async with db.transaction():
+        row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
+        if row is None:
+            return JSONResponse(content=jsonable_encoder({
+                'success': False,
+                'error': 'Not Found'
+            }), status_code=404)
+        
+        if row['currentprice'] is None:
+            return JSONResponse(content=jsonable_encoder({
+                'success': False,
+                'error': 'NOT_FOR_SALE'
+            }), status_code=400)
+    
+        current_owner = await get_current_owner_id(message_id)
+        new_owner = await get_session_data(req)
+        if not new_owner:
+            raise Exception("not logged in")
+        if new_owner['diamonds'] < row['currentprice']:
+            return JSONResponse(content=jsonable_encoder({
+                'success': False,
+                'error': 'NOT_AFFORDABLE'
+            }), status_code=400)
+        
+        await db.execute("INSERT INTO transactions (id, message, seller, buyer, cost, timestamp) "
+                "VALUES (:tid, :nft_id, :seller, :buyer, :cost, :timestamp)", {
+                    'tid': uuid4(),
+                    'nft_id': row['messagesnowflake'],
+                    'seller': current_owner,
+                    'buyer': new_owner['snowflake'],
+                    'cost': row['currentprice'],
+                    'timestamp': datetime.datetime.now()
+                })
+        await db.execute("UPDATE htnfts SET currentPrice = NULL "
+                "WHERE webToken = :sess_token", {'sess_token': new_owner['webtoken']})
+        await db.execute("UPDATE users SET diamonds = diamonds - :price "
+                "WHERE snowflake = :id", {
+                    'id': new_owner['snowflake'],
+                    'price': row['currentprice']
+                })
+        await db.execute("UPDATE users SET diamonds = diamonds + :price "
+                "WHERE snowflake = :id", {
+                    'id': current_owner,
+                    'price': row['currentprice']
+                })
+
+    return JSONResponse(content=jsonable_encoder({'success': True}))
