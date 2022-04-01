@@ -212,6 +212,9 @@ public final class HTSea extends JavaPlugin implements Listener {
 	@EventHandler
 	public void onJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
+		player.sendPlayerListHeader(miniMessage.deserialize(
+				"<color:yellow>You are playing on the <color:gold>HTSea Minecraft Server</color>.</color>\n" +
+				"<color:aqua>Use <color:blue>/vault</color> to deposit and withdrawal Diamonds.</color>"));
 		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 			SecretResponse response = request(SecretResponse.class, "api/users/mc/secret", "GET", false, conn -> {
 				conn.setDoOutput(true);
@@ -235,9 +238,8 @@ public final class HTSea extends JavaPlugin implements Listener {
 					return;
 				}
 				player.sendMessage(WELCOME
-						.append(Component.text(" You are logged in as "))
-						.append(Component.text(profile.getName() + '#' + profile.getDiscriminatorString()))
-						.append(Component.text('.')));
+						.append(miniMessage.deserialize("You are logged in as <color:yellow>"
+								+ profile.getName() + '#' + profile.getDiscriminatorString() + '.')));
 				return;
 			}
 			Component message = WELCOME
