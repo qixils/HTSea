@@ -7,6 +7,7 @@ import MessageImage from '../MessageImage/MessageImage';
 import {isImage, isAudio} from '../../util/file-extensions';
 
 const Attachment = props => {
+	console.log(props);
 	return (
 		<div className={style.attachment}>
 			{
@@ -20,7 +21,9 @@ const Attachment = props => {
 					<div className={style['attachment-file']}>
 						<div className={style['attachment-filename']}>
 							<a href={props.attachment.url}>{props.attachment.name}</a>
-							<span className={style['attachment-size']}>{filesize(props.attachment.size)}</span>
+							<span className={style['attachment-size']}>
+								{Number.isFinite(props.attachment.size) ? filesize(props.attachment.size) : props.attachment.size}
+							</span>
 						</div>
 						{isAudio(props.attachment.url) ? <audio
 							controls

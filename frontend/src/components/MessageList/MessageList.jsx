@@ -76,7 +76,7 @@ const MessageContents = ({message, messageRef, referenced, messageData}) => (
 		{message.attachments === null ? null : message.attachments.map((attachment, index) =>
 			<Attachment
 				key={index}
-				attachment={attachment}
+				attachment={messageData.attachments[attachment]}
 			/>
 		)}
 		{message.embeds === null ? null : message.embeds.map((embed, index) =>
