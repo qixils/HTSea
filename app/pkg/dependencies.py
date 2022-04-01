@@ -148,7 +148,7 @@ async def get_user_auth_data(http_client: aiohttp.ClientSession,
         }
     }
     # create a new user if they don't exist
-    if not (await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": res["id"]})):
+    if not (await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": to_return["id"]})):
         to_return["should_set_cookie"] = True
         await db.execute("INSERT INTO users (snowflake, name, discriminator, avatar, wordleword, "
                          "accesstoken, refreshtoken, webtoken, csrftoken, csrfexpiry) VALUES (:id, "
