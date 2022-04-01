@@ -13,8 +13,9 @@ import os
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 
-db = databases.Database("postgresql://{}@db:5432/{}".format(
+db = databases.Database("postgresql://{}@{}:5432/{}".format(
     os.getenv("POSTGRES_USER"),
+    os.getenv("DB_HOSTNAME"),
     os.getenv("POSTGRES_DB"),
 ), password=os.getenv("POSTGRES_PASSWORD"))
 
