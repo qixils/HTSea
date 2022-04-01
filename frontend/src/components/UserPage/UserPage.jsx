@@ -98,7 +98,7 @@ const UserPage = () => {
             <h2>This user's HTNFTs: {paginator}</h2>
             <div className={style.nfts}>
                 {user.htnftIDs.length > 0 ?
-                    user.htnftIDs.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1).map(id => <NFTPreview id={id} key={id} />) :
+                    user.htnftIDs.slice(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE).map(id => <NFTPreview id={id} key={id} />) :
                     "This user doesn't own any HTNFTs."}
             </div>
         </div>

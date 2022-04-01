@@ -197,7 +197,7 @@ async def get_user(req: Request, resp: Response, user_id: int):
         }), status_code=404)
     
     user['htnftIDs'] = [str(row['messagesnowflake']) for row in
-        await db.fetch_all("SELECT messageSnowflake from htnfts WHERE currentOwner = :id", {'id': user_id})]
+        await db.fetch_all("SELECT messageSnowflake from htnfts WHERE currentOwner = :id ORDER BY mintedAt", {'id': user_id})]
 
     payload = {
         'success': 'true',
