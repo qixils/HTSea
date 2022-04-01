@@ -141,7 +141,7 @@ async def get_user_auth_data(http_client: aiohttp.ClientSession,
         "refreshtoken": refresh_token,
         "cookie": {
             "key": "webToken",
-            "value": res['secret'],
+            "value": secret,
             "samesite": "strict",
             "httponly": True,
             "secure": True
