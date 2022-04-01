@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
+from urllib.parse import urlencode
 
 from pkg.dependencies import *
 
@@ -56,13 +57,14 @@ async def exceut(cmd: str):
 # upon generation of the connect link by the plugin, the plugin inserts into table `queue` the uuid and random secret
 @app.get("/api/users/connect")
 async def connect_minecraft_acct(uuid: str, secret: str):
-    db_users = await db.fetch_all("SELECT * FROM queue WHERE mcuuid=:uuid", {"uuid": uuid})
-    if len(db_users) < 1:
-        return "how did this happen    stop tampering bitchhhfh"
-    # TODO: replace hardcoded localhost URL
+    db_users = await db.fetch_one("SELECT * FROM queue WHERE mcuuid=:uuid AND secret=:secret",
+                                  {"uuid": uuid, "secret": secret})
+    if not db_users:
+        return JSONResponse({'error': 'Invalid parameters'}, HTTPStatus.BAD_REQUEST)
     rres = RedirectResponse("https://discord.com/api/oauth2/authorize?client_id={}&"
-                            "redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fapi%2Fusers%2Fregistermc&"
-                            "response_type=code&scope=identify".format(client_id))
+                            "redirect_uri={}&response_type=code&scope=identify"
+                            .format(client_id, urlencode(os.getenv("API_URL_PREFIX")
+                                                         + "/api/users/registermc")))
     rres.set_cookie(key="mcuuid", value=uuid)
     rres.set_cookie(key="mcsecret", value=secret)
     return rres
