@@ -183,7 +183,7 @@ class Wordle extends Component {
             return null;
         }
 
-        if (this.props.session.status === SESSION_SUCCESS && !this.props.session.data.logged_in) {
+        if (this.props.session.status === SESSION_SUCCESS && !this.props.session.session.logged_in) {
             window.location = loginURL;
         }
 
