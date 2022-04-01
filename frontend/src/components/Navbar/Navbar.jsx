@@ -24,6 +24,7 @@ class Navbar extends Component {
         return (
             <div className={style.navbar}>
                 <Link to="/" className={classNames(style['nav-link'], style['main-link'])}>HTSea</Link>
+                <Link to="/activity" className={style['nav-link']}>Activity</Link>
                 <Link to="/wordle" className={style['nav-link']}>Wordle</Link>
                 {user ?
                     <div className={style.user}>

@@ -199,11 +199,7 @@ async def validate_csrf(session_data):
     #                          {"csrfToken": new_token, "csrfExpiry": new_expiry})
     #         return ExpiredCSRFToken()
 
-
-async def get_user_profile_data(user_id:int) -> typing.Optional[typing.Dict[str, typing.Any]]:
-    user = await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": user_id})
-    if user is None:
-        return None
+def user_to_api_response(user: typing.Dict) -> typing.Dict:
     return {
         'id': str(user['snowflake']),
         'name': user['name'],
@@ -211,6 +207,12 @@ async def get_user_profile_data(user_id:int) -> typing.Optional[typing.Dict[str,
         'avatar': user['avatar'],
         'diamonds': user['diamonds']
     }
+
+async def get_user_profile_data(user_id:int) -> typing.Optional[typing.Dict[str, typing.Any]]:
+    user = await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": user_id})
+    if user is None:
+        return None
+    return user_to_api_response(user)
 
 
 class InvalidCSRFToken(Exception):

@@ -387,3 +387,32 @@ async def buy_htnft(req: Request, resp: Response, message_id: int, csrf: str = N
         'success': True,
         'newDiamonds': new_owner['diamonds'] - row['currentprice']
     }))
+
+async def transactions_to_api_response(txs):
+    user_ids = set()
+    for row in txs:
+        if row['seller'] is not None:
+            user_ids.add(row['seller'])
+        user_ids.add(row['buyer'])
+    
+    users = await db.fetch_all("SELECT * FROM users WHERE snowflake = ANY(:ids)", {'ids': user_ids})
+    users_resp = [user_to_api_response(user) for user in users]
+    return {
+        'transactions': [{
+        'id': str(tx['id']),
+        'messageID': str(tx['message']),
+        'seller': None if tx['seller'] is None else str(tx['seller']),
+        'buyer': str(tx['buyer']),
+        'cost': tx['cost'],
+        'timestamp': tx['timestamp'].timestamp()
+    } for tx in txs],
+        'users': users_resp
+    }
+
+@route.get('/recent_transactions')
+async def recent_transactions(req: Request, resp: Response, before: float = datetime.datetime.now().timestamp()):
+    print(before)
+    rows = await db.fetch_all("SELECT * FROM transactions WHERE timestamp < :before ORDER BY timestamp DESC LIMIT 10", {'before': datetime.datetime.fromtimestamp(before)})
+
+    payload = await transactions_to_api_response(rows)
+    return JSONResponse(content=jsonable_encoder(payload))
