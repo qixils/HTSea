@@ -138,8 +138,8 @@ async def add_diamonds(req: Request):
     if 'diamonds' not in payload:
         return JSONResponse({'error': 'The diamonds parameter is required.'},
                             HTTPStatus.BAD_REQUEST)
-    uuid = req.query_params['uuid']
-    diamonds = req.query_params['diamonds']
+    uuid = payload['uuid']
+    diamonds = payload['diamonds']
     profile = await db.fetch_one("SELECT * FROM users WHERE minecraft=:uuid", {'uuid': uuid})
     if not profile:
         return JSONResponse({'error': 'The requested profile could not be found.'},
