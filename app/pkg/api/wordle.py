@@ -8,7 +8,7 @@ import random
 
 route = APIRouter(prefix="/api/wordle")
 
-PAYMENT_TABLE = [1, 1/2, 1/5, 1/10, 1/20, 1/50]
+PAYMENT_TABLE = [2, 1, 1/2, 1/5, 1/10, 1/20]
 COOLDOWN_PERIOD = datetime.timedelta(minutes=3)
 
 
