@@ -166,8 +166,10 @@ async def get_user_profile_data(user_id:int) -> typing.Optional[typing.Dict[str,
     if user is None:
         return None
     return {
+        'userID': str(user['snowflake']),
         'name': user['name'],
         'discriminator': user['discriminator'],
         'avatar': user['avatar'],
-        'diamonds': user['diamonds']
+        'diamonds': user['diamonds'],
+        'htnftIDs': await db.fetch_all("SELECT messageSnowflake from htnfts WHERE authorSnowflake = :id", {'id': user['snowflake']})
     }
