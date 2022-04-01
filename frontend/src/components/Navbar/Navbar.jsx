@@ -27,15 +27,21 @@ class Navbar extends Component {
                 <Link to="/activity" className={style['nav-link']}>Activity</Link>
                 <Link to="/wordle" className={style['nav-link']}>Wordle</Link>
                 {user ?
-                    <div className={style.user}>
-                        <img className={style.avatar} alt="" src={user.avatar} width="32" height="32" />
-                        <span className={style.username}>{user.name}</span>
-                        <span className={style.discriminator}>#{user.discriminator}</span>
-                        <div className={style.diamonds}>
-                            <img className={style['diamond-icon']} src={diamond} width="24" height="26" alt="Diamonds" />
-                            {this.props.diamonds}
+                        <div className={style.user}>
+                        <Link to={`/users/${user.snowflake}`}>
+                            <div className={style['user-inner']}>
+                                <img className={style.avatar} alt="" src={user.avatar} width="32" height="32" />
+                                <span className={style.username}>{user.name}</span>
+                                <span className={style.discriminator}>#{user.discriminator}</span>
+                                <div className={style.diamonds}>
+                                    <img className={style['diamond-icon']} src={diamond} width="24" height="26" alt="Diamonds" />
+                                    {this.props.diamonds}
+                                </div>
+                            </div>
+
+                        </Link>
                         </div>
-                    </div> :
+                     :
                     <a className={classNames(style['nav-link'], style.login)} href={loginURL}>Log in via Discord</a>}
             </div>
         );
