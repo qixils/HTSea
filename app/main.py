@@ -22,6 +22,7 @@ app.add_middleware(
 
 app.include_router(htnft.route)
 app.include_router(users.route)
+app.include_router(users.base_route)
 app.include_router(wordle.route)
 
 
