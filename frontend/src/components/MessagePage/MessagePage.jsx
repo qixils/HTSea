@@ -1,5 +1,4 @@
 import style from './style.module.scss';
-import diamond from '../../icons/diamond.png';
 
 import {useCallback, useState} from 'react';
 import {useSelector, useDispatch} from 'react-redux';

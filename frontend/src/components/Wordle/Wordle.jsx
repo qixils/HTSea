@@ -5,6 +5,8 @@ import {connect} from 'react-redux';
 import classNames from 'classnames';
 
 import {getWordleInfo, guess, WORDLE_ERROR, WORDLE_IDLE, WORDLE_UPDATING} from '../../redux/wordle';
+import {getSession, SESSION_IDLE, SESSION_SUCCESS} from '../../redux/session';
+import loginURL from '../../util/login-url';
 
 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 const alphabet = new Set(letters);
@@ -176,6 +178,15 @@ class Wordle extends Component {
             return null;
         }
 
+        if (this.props.session.status === SESSION_IDLE) {
+            this.props.getSession();
+            return null;
+        }
+
+        if (this.props.session.status === SESSION_SUCCESS && !this.props.session.logged_in) {
+            window.location = loginURL;
+        }
+
         const guesses = this.props.wordle?.guesses || [];
 
         const rows = [];
@@ -258,12 +269,14 @@ class Wordle extends Component {
 
 const mapStateToProps = state => {
     return {
-        wordle: state.wordle
+        wordle: state.wordle,
+        session: state.session
     };
 }
 
 const mapDispatchToProps = dispatch => ({
     getWordleInfo: () => dispatch(getWordleInfo),
+    getSession: () => dispatch(getSession),
     guess: (value) => guess(dispatch, value)
 });
 
