@@ -46,6 +46,7 @@ services:
       - BOT_TOKEN
       - BOT_GUILD
       - INTERNAL_API_SECRET
+      - FRONTEND_URL_PREFIX
     depends_on:
       - db
     networks:

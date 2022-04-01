@@ -69,10 +69,10 @@ const completeMint = async interaction => {
             Authorization: `Bearer ${process.env.INTERNAL_API_SECRET}`
         }
     });
-    if (res.success) {
-        await interaction.update({content: 'Minted!', components: []});
+    if (res.data.success) {
+        await interaction.update({content: `Minted! You can view it at ${process.env.FRONTEND_URL_PREFIX}/messages/${msg.id}`, components: []});
     } else {
-        await interaction.update({content: errorToMessage(res), components: []});
+        await interaction.update({content: errorToMessage(res.data), components: []});
     }
 };
 

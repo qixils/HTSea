@@ -143,9 +143,9 @@ async def mint_htnft(req: Request,
 
 
     return JSONResponse(content=jsonable_encoder({
-        'user_exists': True,
+        'success': True,
         'user_diamonds': user['diamonds'],
-        'cost': MINT_COST
+        'cost': MINT_COST,
     }))
 
 @route.get("/messages/{message_id}")
