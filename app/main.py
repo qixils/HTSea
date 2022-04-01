@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
-from urllib.parse import urlencode
+from urllib.parse import quote
 
 from pkg.dependencies import *
 
@@ -54,8 +54,8 @@ async def connect_minecraft_acct(uuid: str, secret: str):
         return JSONResponse({'error': 'Invalid parameters'}, HTTPStatus.BAD_REQUEST)
     rres = RedirectResponse("https://discord.com/api/oauth2/authorize?client_id={}&"
                             "redirect_uri={}&response_type=code&scope=identify"
-                            .format(client_id, urlencode(os.getenv("API_URL_PREFIX")
-                                                         + "/api/users/registermc")))
+                            .format(client_id, quote(os.getenv("API_URL_PREFIX")
+                                                     + "/api/users/registermc")))
     rres.set_cookie(key="mcuuid", value=uuid)
     rres.set_cookie(key="mcsecret", value=secret)
     return rres
