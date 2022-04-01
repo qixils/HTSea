@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;600&display=swap');
+
+.message-page {
+    font-family: Poppins, sans-serif;
+    padding: 1em;
+    margin: -5px 50px;
+    display: flex;
+    align-items: start;
+    flex-direction: column;
+    width: 100%;
+    gap: 20px;
+}
+
+h1 {
+    font: 600 30px Poppins, sans-serif;
+    margin-bottom: 5px;
+}
+
+.author-header {
+    font: 300 17px / 21px Poppins, sans-serif;
+}
+
+a {
+    color: var(--blue-opensea);
+    text-decoration: none;
+}
+
+.sale-wrapper {
+    border: 1px solid var(--border-light);
+    padding: 0.75em;
+    width: 100%;
+	border-radius: 0.25rem;
+}
+
+.sale-price {
+    font: 600 30px Poppins, sans-serif;
+}
+
+.nftbutton-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+}
+
+.diamond-icon {
+    margin-right: 0.25em;
+}

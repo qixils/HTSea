@@ -1,6 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap');
+
 .App {
   display: flex;
   flex: 1 1 auto;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+h1 {
+  font: 500 35px Poppins, sans-serif;
+}
+
+h2 {
+  font: 300 20px Poppins, sans-serif;
+}
+
+.button-wrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 1em;
 }

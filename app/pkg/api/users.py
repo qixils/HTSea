@@ -20,6 +20,21 @@ httpClient = HttpClient()
 async def startup():
     httpClient.start()
 
+@route.get("/{user_id}")
+async def get_user(req: Request, resp: Response, user_id: int):
+    user = await get_user_profile_data(user_id)
+    if user is None:
+        return JSONResponse(content=jsonable_encoder({
+            'success': False,
+            'error': 'Not Found'
+        }), status_code=404)
+    
+    payload = {
+        'success': 'true',
+        'user': user
+    }
+
+    return JSONResponse(content=jsonable_encoder(payload))
 
 # flow for starting from discord auth url
 @route.get("/register", response_class=fastapi.responses.HTMLResponse)
