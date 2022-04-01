@@ -22,9 +22,12 @@
 .user {
     display: flex;
     align-items: center;
-    margin-left: auto;
     padding: 0 1.5rem;
     font-size: 125%;
+}
+
+.user, .login {
+    margin-left: auto;
 }
 
 .discriminator {

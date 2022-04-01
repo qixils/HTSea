@@ -47,7 +47,7 @@ const sessionReducer = (state, action) => {
                     status: action.type,
                     session: action.session
                 },
-                diamonds: action.session.user.diamonds
+                diamonds: action.session.user?.diamonds
             }
         }
         case SESSION_ERROR: {
@@ -66,11 +66,11 @@ const sessionReducer = (state, action) => {
 const getSession = dispatch => {
     dispatch(sessionPending());
     api('/api/users/session')
-        .then(res => res.json())
         .then(res => {
             dispatch(sessionSuccess(res));
         })
         .catch(err => {
+            console.log(err);
             dispatch(sessionError(err));
         })
 };

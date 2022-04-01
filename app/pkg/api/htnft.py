@@ -258,7 +258,8 @@ async def sell_htnft(req: Request, resp: Response, message_id: int, csrf: str = 
     if current_owner != user['snowflake']:
         return JSONResponse(content=jsonable_encoder({
             'success': False,
-            'error': 'Forbidden'
+            'error': 'NOT_OWNER',
+            'comment': 'You do not own this message'
         }), status_code=403)
 
     data = await req.json()
@@ -312,9 +313,10 @@ async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, csrf:
     if current_owner != user['snowflake']:
         return JSONResponse(content=jsonable_encoder({
             'success': False,
-            'error': 'Forbidden'
+            'error': 'NOT_OWNER',
+            'comment': 'You do not own this message'
         }), status_code=403)
-    
+
     await db.execute("UPDATE htnfts SET currentPrice = NULL "
                     "WHERE messageSnowflake = :id", {'id': message_id})
 
@@ -357,11 +359,17 @@ async def buy_htnft(req: Request, resp: Response, message_id: int, csrf: str = N
                 'error': 'NOT_FOR_SALE'
             }), status_code=400)
     
-        current_owner = await get_current_owner_id(message_id)
         if new_owner['diamonds'] < row['currentprice']:
             return JSONResponse(content=jsonable_encoder({
                 'success': False,
                 'error': 'NOT_AFFORDABLE'
+            }), status_code=400)
+
+        current_owner = await get_current_owner_id(message_id)
+        if current_owner == new_owner['snowflake']:
+            return JSONResponse(content=jsonable_encoder({
+                'success': False,
+                'error': 'CANNOT_SELL_TO_SELF'
             }), status_code=400)
         
         await db.execute("INSERT INTO transactions (id, message, seller, buyer, cost, timestamp) "
@@ -374,7 +382,7 @@ async def buy_htnft(req: Request, resp: Response, message_id: int, csrf: str = N
                     'timestamp': datetime.datetime.now()
                 })
         await db.execute("UPDATE htnfts SET currentPrice = NULL "
-                "WHERE webToken = :sess_token", {'sess_token': new_owner['webtoken']})
+                "WHERE messageSnowflake = :id", {'id': message_id})
         await db.execute("UPDATE users SET diamonds = diamonds - :price "
                 "WHERE snowflake = :id", {
                     'id': new_owner['snowflake'],
@@ -386,4 +394,7 @@ async def buy_htnft(req: Request, resp: Response, message_id: int, csrf: str = N
                     'price': row['currentprice']
                 })
 
-    return JSONResponse(content=jsonable_encoder({'success': True}))
+    return JSONResponse(content=jsonable_encoder({
+        'success': True,
+        'newDiamonds': new_owner['diamonds'] - row['currentprice']
+    }))

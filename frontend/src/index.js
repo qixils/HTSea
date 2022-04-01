@@ -10,6 +10,7 @@ import thunkMiddleware from 'redux-thunk';
 import {Provider} from 'react-redux';
 
 import App from './App';
+import ErrorBanner from './components/ErrorBanner/ErrorBanner';
 import MessagePage from './components/MessagePage/MessagePage';
 import Navbar from './components/Navbar/Navbar';
 import Wordle from './components/Wordle/Wordle';
@@ -23,6 +24,7 @@ ReactDOM.render(
       <BrowserRouter>
         <Navbar />
         <div className={style.main}>
+          <ErrorBanner />
           <Routes>
             <Route path="/" element={<App />} /> 
             <Route path="wordle" element={<Wordle />} /> 

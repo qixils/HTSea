@@ -30,7 +30,6 @@ const withEmoji = Component => {
 			emojiName = emoji.name;
 			emojiURL = `https://cdn.discordapp.com/emojis/${emoji.id}.${emoji.animated ? 'gif' : 'png'}`;
 		}
-		console.log(emoji);
 		return <Component emojiName={emojiName} emojiURL={emojiURL} {...rest} />;
 	};
 	return Emoji;

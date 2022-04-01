@@ -1,12 +1,15 @@
 import {messageReducer, initialState as messageInitialState} from './message';
 import {sessionReducer, initialState as sessionInitialState} from './session';
 import {wordleReducer, initialState as wordleInitialState} from './wordle';
+import {diamondsReducer} from './diamonds';
+import {errorReducer} from './error';
 
 const initialState = {
     message: messageInitialState,
     session: sessionInitialState,
     wordle: wordleInitialState,
-    diamonds: null
+    diamonds: null,
+    error: null
 };
 
 const reduceReducers = (...reducers) => {
@@ -18,6 +21,6 @@ const reduceReducers = (...reducers) => {
 
 }
 
-const reducer = () => reduceReducers(messageReducer, sessionReducer, wordleReducer);
+const reducer = () => reduceReducers(messageReducer, sessionReducer, wordleReducer, diamondsReducer, errorReducer);
 
 export default reducer;

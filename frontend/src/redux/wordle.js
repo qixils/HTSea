@@ -95,7 +95,6 @@ const wordleReducer = (state, action) => {
 const getWordleInfo = dispatch => {
     dispatch(wordleUpdating());
     api('/api/wordle/info')
-        .then(res => res.json())
         .then(res => {
             dispatch(wordleSuccess(res));
         })
@@ -112,7 +111,6 @@ const guess = (dispatch, value) => {
             guess: value
         }
     })
-        .then(res => res.json())
         .then(res => {
             if (res.success) {
                 dispatch(wordleSuccess(res.new_state, value));

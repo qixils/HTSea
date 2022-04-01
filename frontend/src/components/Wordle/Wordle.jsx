@@ -56,7 +56,6 @@ class Wordle extends Component {
             cooldownRemaining: null
         };
 
-        this.onGuess = this.onGuess.bind(this);
         this.onKeyDown = this.onKeyDown.bind(this);
         this.onKeyClick = this.onKeyClick.bind(this);
         this.tick = this.tick.bind(this);
@@ -70,16 +69,6 @@ class Wordle extends Component {
             this.props.wordle.status === WORDLE_IDLE ||
             this.props.wordle.status === WORDLE_UPDATING
         );
-    }
-
-    onGuess (event) {
-        api('/api/wordle/guess', {
-            method: 'post',
-            params: {
-                guess: 'anger'
-            }
-        })
-            .then(res => res.json())
     }
 
     // remove last letter from guess
@@ -186,6 +175,7 @@ class Wordle extends Component {
     render () {
         if (this.props.wordle.status === WORDLE_IDLE) {
             this.props.getWordleInfo();
+            return null;
         }
 
         const guesses = this.props.wordle?.guesses || [];
@@ -235,7 +225,7 @@ class Wordle extends Component {
             for (let i = 0; i < 5; i++) {
                 const guessLetter = guess.word[i];
                 const guessScore = guess.result[i];
-                if (guessScore === 'x') {
+                if (guessScore === 'x' && keyboardState[guessLetter] === '?') {
                     keyboardState[guessLetter] = 'x';
                     continue;
                 }

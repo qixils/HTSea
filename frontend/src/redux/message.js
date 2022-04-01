@@ -1,4 +1,6 @@
 import api from '../util/api';
+import {setError} from './error';
+import {setDiamonds} from './diamonds';
 
 export const MESSAGE_IDLE = 'MESSAGE_IDLE';
 export const MESSAGE_UPDATING = 'MESSAGE_UPDATING';
@@ -69,7 +71,6 @@ const messageReducer = (state, action) => {
 const getMessage = (dispatch, id) => {
     dispatch(messageUpdating());
     api(`/api/messages/${id}`)
-        .then(res => res.json())
         .then(res => {
             dispatch(messageSuccess(res));
         })
@@ -78,5 +79,43 @@ const getMessage = (dispatch, id) => {
         });
 };
 
+const buyMessage = (dispatch, id) => {
+    dispatch(messageUpdating());
+    api(`/api/messages/${id}/buy`, {method: 'post'})
+        .then(res => {
+            dispatch(setDiamonds(res.newDiamonds));
+            getMessage(dispatch, id);
+        })
+        .catch(err => {
+            dispatch(messageError(err));
+        });
+};
 
-export {messageReducer, getMessage};
+const sellMessage = (dispatch, id, price) => {
+    dispatch(messageUpdating());
+    api(`/api/messages/${id}/sell`, {
+        method: 'post',
+        body: JSON.stringify({price})
+    })
+        .then(res => {
+            getMessage(dispatch, id);
+        })
+        .catch(err => {
+            dispatch(setError(err));
+            getMessage(dispatch, id);
+        });
+};
+
+const cancelMessageSale = (dispatch, id, price) => {
+    dispatch(messageUpdating());
+    api(`/api/messages/${id}/cancel_sale`, {method: 'post'})
+        .then(res => {
+            getMessage(dispatch, id);
+        })
+        .catch(err => {
+            dispatch(setError(err));
+            getMessage(dispatch, id);
+        });
+};
+
+export {messageReducer, getMessage, buyMessage, sellMessage, cancelMessageSale};

@@ -20,22 +20,6 @@ httpClient = HttpClient()
 async def startup():
     httpClient.start()
 
-@route.get("/{user_id}")
-async def get_user(req: Request, resp: Response, user_id: int):
-    user = await get_user_profile_data(user_id)
-    if user is None:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'Not Found'
-        }), status_code=404)
-    
-    payload = {
-        'success': 'true',
-        'user': user
-    }
-
-    return JSONResponse(content=jsonable_encoder(payload))
-
 # flow for starting from discord auth url
 @route.get("/register", response_class=fastapi.responses.HTMLResponse)
 async def register(user_req: Request,
@@ -168,6 +152,27 @@ async def add_diamonds(req: Request):
     await db.execute("UPDATE users SET diamonds=:diamonds WHERE minecraft=:uuid", profile)
     return profile
 
+@route.post("/{user_id}/add_diamonds")
+async def add_diamonds(req: Request, user_id: int):
+    if validate_resp := validate_internal_request(req):
+        return validate_resp
+    payload = await req.json()
+    if 'diamonds' not in payload:
+        return JSONResponse({'error': 'The diamonds parameter is required.'},
+                            HTTPStatus.BAD_REQUEST)
+    diamonds = payload['diamonds']
+    profile = dict(await db.fetch_one("SELECT * FROM users WHERE snowflake=:id", {'id': user_id}))
+    if not profile:
+        return JSONResponse({'error': 'The requested profile could not be found.'},
+                            HTTPStatus.NOT_FOUND)
+    profile['diamonds'] += diamonds
+    if profile['diamonds'] < 0:
+        # TODO use fixed error IDs (an int enum) so this is easier for the plugin to parse?
+        return JSONResponse({'error': "Attempted to withdrawal more diamonds than available in user's account."},
+                            HTTPStatus.BAD_REQUEST)
+    await db.execute("UPDATE users SET diamonds=:diamonds WHERE snowflake=:id", {'diamonds': profile['diamonds'], 'id': user_id})
+    return profile
+
 
 @route.get("/session")
 async def get_session(req: Request):
@@ -178,5 +183,22 @@ async def get_session(req: Request):
     if user is not None:
         # don't tell the user what word they need to guess
         del user['wordleword']
+        user['snowflake'] = str(user['snowflake'])
         res_data['user'] = user
     return JSONResponse(content=jsonable_encoder(res_data))
+
+@route.get("/{user_id}")
+async def get_user(req: Request, resp: Response, user_id: int):
+    user = await get_user_profile_data(user_id)
+    if user is None:
+        return JSONResponse(content=jsonable_encoder({
+            'success': False,
+            'error': 'Not Found'
+        }), status_code=404)
+    
+    payload = {
+        'success': 'true',
+        'user': user
+    }
+
+    return JSONResponse(content=jsonable_encoder(payload))

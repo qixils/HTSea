@@ -8,6 +8,8 @@ import classNames from 'classnames';
 
 import {getSession, SESSION_IDLE, SESSION_SUCCESS} from '../../redux/session';
 
+const loginURL = `https://discord.com/oauth2/authorize?response_type=code&client_id=${process.env.REACT_APP_CLIENT_ID}&scope=identify%20guilds&redirect_uri=${process.env.REACT_APP_API_URL}/api/users/register&prompt=consent`;
+
 class Navbar extends Component {
     render () {
         if (this.props.session.status === SESSION_IDLE) {
@@ -33,7 +35,7 @@ class Navbar extends Component {
                             {this.props.diamonds}
                         </div>
                     </div> :
-                    null}
+                    <a className={classNames(style['nav-link'], style.login)} href={loginURL}>Log in via Discord</a>}
             </div>
         );
     }

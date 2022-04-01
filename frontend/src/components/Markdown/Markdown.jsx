@@ -1,7 +1,7 @@
 /* eslint-disable react/display-name */
 import style from './style.module.scss';
 
-import {Component} from 'react';
+import {Component, Fragment} from 'react';
 import {parser, rulesEmbed, markdownEngine} from 'discord-markdown';
 import emojiRegex from 'twemoji-parser/dist/lib/regex';
 
@@ -90,12 +90,14 @@ const toTwemoji = text => {
 	const nodes = [];
 	let result;
 	let lastLastIndex = 0;
+	let i = 0;
 	// eslint-disable-next-line no-cond-assign
 	while (result = emojiRegex.exec(text)) {
 		const emojiText = result[0];
 		nodes.push(text.slice(lastLastIndex, result.index));
-		nodes.push(<TooltipEmoji emoji={emojiText} />);
+		nodes.push(<TooltipEmoji emoji={emojiText} key={i} />);
 		lastLastIndex = emojiRegex.lastIndex;
+		i++;
 	}
 
 	if (lastLastIndex !== text.length) {
@@ -126,7 +128,7 @@ const reactRules = {
 	discordEmoji: (content, node) => <TooltipEmoji emoji={node} />
 };
 
-const reactify = (nodeArray, removeBreaks, messageData) => nodeArray.map(node => {
+const reactify = (nodeArray, removeBreaks, messageData) => nodeArray.map((node, index) => {
 	const nodeHasContent = Object.prototype.hasOwnProperty.call(node, 'content');
 	let content = node.content;
 	if (nodeHasContent && Array.isArray(node.content)) {
@@ -138,12 +140,12 @@ const reactify = (nodeArray, removeBreaks, messageData) => nodeArray.map(node =>
 	}
 
 	if (Object.prototype.hasOwnProperty.call(reactRules, node.type)) {
-		return reactRules[node.type](content, node, messageData);
+		return <Fragment key={index}>{reactRules[node.type](content, node, messageData)}</Fragment>;
 	}
 
 	// eslint-disable-next-line no-console
 	console.warn(`Unknown Markdown node type: ${node.type}`);
-	return nodeHasContent ? reactRules.text(content) : null;
+	return nodeHasContent ? <Fragment key={index}>{reactRules.text(content)}</Fragment> : null;
 });
 
 const embedParserMD = markdownEngine.parserFor(rulesEmbed);

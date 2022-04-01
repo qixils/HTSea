@@ -1,0 +1,45 @@
+.modal-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+}
+
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.modal {
+	pointer-events: auto;
+	overflow: auto;
+    border-radius: 0.25rem;
+    background-color: var(--bg-primary);
+    cursor: initial;
+
+	animation-duration: 0.125s;
+	animation-name: popup;
+	animation-timing-function: cubic-bezier(.3,1.25,.6,1);
+}
+
+@keyframes popup {
+	from {
+		transform: scale(0)
+	}
+
+	to {
+		transform: scale(1)
+	}
+}

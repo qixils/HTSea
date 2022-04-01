@@ -150,6 +150,8 @@ async def validate_user(session_token: str):
 
 
 async def validate_csrf(session_data):
+    if os.getenv("SKIP_CSRF_VALIDATION") == "YES":
+        return
     row = dict(await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": session_data["snowflake"]}))
     if row["csrftoken"] != session_data["csrftoken"]:
         raise InvalidCSRFToken()
@@ -177,7 +179,7 @@ async def get_user_profile_data(user_id:int) -> typing.Optional[typing.Dict[str,
     if user is None:
         return None
     return {
-        'userID': str(user['snowflake']),
+        'id': str(user['snowflake']),
         'name': user['name'],
         'discriminator': user['discriminator'],
         'avatar': user['avatar'],
