@@ -93,26 +93,30 @@ const startMint = async interaction => {
 	let content;
 	let components;
 	try {
-		const res = await axios.post('http://app:8000/api/mint_check', JSON.stringify(payload), {
-			headers: {
-				Authorization: `Bearer ${process.env.INTERNAL_API_SECRET}`
-			}
-		});
-		const {data} = res;
-		if (data.success) {
-			content = `Mint the message for **${data.cost} diamonds**? Your current balance is **${data.user_diamonds} diamonds**.`;
-			components = [new MessageActionRow().addComponents(
-				new MessageButton()
-					.setCustomId('complete_mint')
-					.setLabel('Mint')
-					.setStyle('PRIMARY'),
-				new MessageButton()
-					.setCustomId('cancel_mint')
-					.setLabel('Cancel')
-					.setStyle('DANGER'),
-			)];
+		if (interaction.user.id !== interaction.targetMessage.author.id) {
+			content = 'You can\'t mint someone else\'s message!';
 		} else {
-			content = errorToMessage(data);
+			const res = await axios.post('http://app:8000/api/mint_check', JSON.stringify(payload), {
+				headers: {
+					Authorization: `Bearer ${process.env.INTERNAL_API_SECRET}`
+				}
+			});
+			const {data} = res;
+			if (data.success) {
+				content = `Mint the message for **${data.cost} diamonds**? Your current balance is **${data.user_diamonds} diamonds**.`;
+				components = [new MessageActionRow().addComponents(
+					new MessageButton()
+						.setCustomId('complete_mint')
+						.setLabel('Mint')
+						.setStyle('PRIMARY'),
+					new MessageButton()
+						.setCustomId('cancel_mint')
+						.setLabel('Cancel')
+						.setStyle('DANGER'),
+				)];
+			} else {
+				content = errorToMessage(data);
+			}
 		}
 	} catch (err) {
 		content = `Error: ${err.message}`;
