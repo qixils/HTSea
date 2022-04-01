@@ -8,10 +8,7 @@
     align-items: start;
     flex-direction: column;
     width: 100%;
-}
-
-.message-page > * {
-    margin: 15px;
+    gap: 20px;
 }
 
 h1 {
@@ -24,21 +21,54 @@ h1 {
 }
 
 a {
-    color: #2081e2;
+    color: var(--blue-opensea);
     text-decoration: none;
 }
 
+.sale-wrapper {
+    border: 1px solid var(--border-light);
+    padding: 0.75em;
+    width: 100%;
+	border-radius: 0.25rem;
+}
+
+.sale-price {
+    font: 600 30px Poppins, sans-serif;
+}
+
+.nftbutton-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+}
 
 .nftbutton {
-    border-radius: 10px;
-    font: 600 15px Poppins;
+    font: 600 20px Poppins;
     padding: 10px;
-    width: 180px;
-    color: #2081e2;
-    outline: #2081e2 solid 2px;
+    width: 250px;
+    border-radius: 10px;
     transition: text-shadow 0.25s;
 }
 
-.nftbutton:hover {
-    text-shadow: #2081e2 0px 0px 5px;
+.nbw {
+    color: var(--blue-opensea);
+    border: 3px solid var(--blue-opensea);
+}
+
+.nbb {
+    background-color: var(--blue-opensea);
+    color: #FFF;
+    border: 3px solid #FFFFFF00;
+}
+
+.nbw:hover {
+    text-shadow: var(--blue-opensea) 0px 0px 5px;
+}
+
+.nbb:hover {
+    text-shadow: #FFF 0px 0px 5px;
+}
+
+.diamond-icon {
+    margin-right: 0.25em;
 }

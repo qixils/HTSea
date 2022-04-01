@@ -12,6 +12,7 @@ specifiers:
   react-redux: ^7.2.6
   react-router-dom: ^6.2.2
   react-scripts: 5.0.0
+  reactjs-popup: ^2.0.5
   redux: ^4.1.2
   redux-thunk: ^2.4.1
   sass: ^1.49.9
@@ -30,6 +31,7 @@ dependencies:
   react-redux: 7.2.6_react-dom@17.0.2+react@17.0.2
   react-router-dom: 6.2.2_react-dom@17.0.2+react@17.0.2
   react-scripts: 5.0.0_react@17.0.2+sass@1.49.10
+  reactjs-popup: 2.0.5_react-dom@17.0.2+react@17.0.2
   redux: 4.1.2
   redux-thunk: 2.4.1_redux@4.1.2
   sass: 1.49.10
@@ -7972,6 +7974,17 @@ packages:
     dependencies:
       loose-envify: 1.4.0
       object-assign: 4.1.1
+    dev: false
+
+  /reactjs-popup/2.0.5_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-b5hv9a6aGsHEHXFAgPO5s1Jw1eSkopueyUVxQewGdLgqk2eW0IVXZrPRpHR629YcgIpC2oxtX8OOZ8a7bQJbxA==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: '>=16'
+      react-dom: '>=16'
+    dependencies:
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
     dev: false
 
   /readable-stream/2.3.7:
