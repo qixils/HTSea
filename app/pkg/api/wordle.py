@@ -122,8 +122,10 @@ async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(
                         })
     else:
         # add to existing guesses
-        await db.execute("UPDATE users SET wordleGuesses = array_append(wordleGuesses, :guess)", {
-            'guess': guess
+        await db.execute("UPDATE users SET wordleGuesses = array_append(wordleGuesses, :guess)"
+                        "WHERE webToken = :sess_token", {
+            'guess': guess,
+            'sess_token': info['secret']
         })
 
     # re-fetch info
