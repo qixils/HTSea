@@ -152,13 +152,13 @@ async def validate_user(session_token: str):
 async def validate_csrf(session_data):
     row = dict(await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": session_data["snowflake"]}))
     if row["csrftoken"] != session_data["csrftoken"]:
-        return InvalidCSRFToken()
+        raise InvalidCSRFToken()
     if datetime.datetime.utcnow() > row["csrfexpiry"]:
         new_token = gen_csrf()
         new_expiry = datetime.datetime.utcnow() + datetime.timedelta(hours=12)
         await db.execute("UPDATE users SET csrfToken = :csrfToken, csrfExpiry = :csrfExpiry",
                          {"csrfToken": new_token, "csrfExpiry": new_expiry})
-        return ExpiredCSRFToken()
+        raise ExpiredCSRFToken()
     # -------------------------
     # if csrf_token is not None:
     #     if users["csrfToken"] is not csrf_token:
