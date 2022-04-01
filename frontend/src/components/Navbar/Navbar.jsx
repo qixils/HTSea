@@ -1,5 +1,6 @@
 import style from './style.module.scss';
 import diamond from '../../icons/diamond.png';
+import logo from '../../icons/logo.png';
 
 import {Component} from 'react';
 import {connect} from 'react-redux';
@@ -23,7 +24,9 @@ class Navbar extends Component {
 
         return (
             <div className={style.navbar}>
-                <Link to="/" className={classNames(style['nav-link'], style['main-link'])}>HTSea</Link>
+                <Link to="/" className={classNames(style['nav-link'], style['main-link'])}>
+                    <img className={style.logo} src={logo} alt="Logo" width="48" height="48" />HTSea
+                </Link>
                 <Link to="/activity" className={style['nav-link']}>Activity</Link>
                 <Link to="/wordle" className={style['nav-link']}>Wordle</Link>
                 {user ?
