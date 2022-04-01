@@ -46,7 +46,7 @@ async def get_wordle_info(user_req: Request, words: Wordlist) -> typing.Dict:
     # reset game after timeout period
     if cooldown is not None and cooldown <= datetime.datetime.now():
         # generate new word, empty out guesses array, clear cooldown
-        word = random.choice(words.get_list())
+        word = words.get_random_word()
         guesses = []
         cooldown = None
         await db.execute("UPDATE users SET (wordleWord, wordleGuesses, wordleCooldown) ="

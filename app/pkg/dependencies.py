@@ -31,8 +31,12 @@ class Wordlist:
         if cls.wordlist is None:
             print(os.listdir())
             with open("words.txt", "r") as words:
-                cls.wordlist = words.read().split("\n")
+                cls.wordlist = words.read().strip().split("\n")
         return cls.wordlist
+
+    @classmethod
+    def get_random_word(cls):
+        return random.choice(cls.get_list())
 
 
 class HttpClient:
@@ -96,8 +100,8 @@ def gen_discord_oauth_payload(code: str, redirect_uri: str):
 
 
 async def get_user_auth_data(http_client: aiohttp.ClientSession,
-                        code: str,
-                        redirect_uri: str) -> typing.Dict[str, typing.Any]:
+                             code: str,
+                             redirect_uri: str) -> typing.Dict[str, typing.Any]:
     if code is None:
         raise ApiException("This page must be accessed through the Discord OAuth flow.",
                            HTTPStatus.UNAUTHORIZED)
@@ -114,18 +118,39 @@ async def get_user_auth_data(http_client: aiohttp.ClientSession,
     refresh_token: str = res["refresh_token"]
     headers: dict[str, str] = {"Authorization": f"Bearer {access_token}"}
     res = await http_client.get("https://discord.com/api/v9/users/@me", headers=headers)
-    res = json.loads(await res.read())
+    res = await res.json()
     # web token secret
     secret: str = gen_hash(access_token + res["id"])
-    return {
+    to_return = {
         "id": int(res["id"]),
         "username": res["username"],
         "discriminator": int(res["discriminator"]),
         "avatar": f"https://cdn.discordapp.com/avatars/{res['id']}/{res['avatar']}.jpg",
         "secret": secret,
         "accesstoken": access_token,
-        "refreshtoken": refresh_token
+        "refreshtoken": refresh_token,
+        "cookie": {
+            "key": "webToken",
+            "value": res['secret'],
+            "samesite": "strict",
+            "httponly": True,
+            "secure": True
+        }
     }
+    # create a new user if they don't exist
+    if not (await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": res["id"]})):
+        to_return["should_set_cookie"] = True
+        await db.execute("INSERT INTO users (snowflake, name, discriminator, avatar, wordleword, "
+                         "accesstoken, refreshtoken, webtoken, csrftoken, csrfexpiry) VALUES (:id, "
+                         ":name, :discriminator, :avatar, :wordleword, :accesstoken, "
+                         ":refreshtoken, :webtoken, :csrftoken, :csrfexpiry)", {
+            "id": res["id"], "name": res["username"], "discriminator": res["discriminator"],
+            "avatar": to_return["avatar"], "wordleword": Wordlist.get_random_word(),
+            "accesstoken": to_return["accesstoken"], "refreshtoken": to_return["refreshtoken"],
+            "webtoken": to_return["secret"], "csrftoken": gen_csrf(),
+            "csrfexpiry": datetime.datetime.utcnow() + datetime.timedelta(hours=12)
+        })
+    return to_return
 
 
 async def get_session_data(req: Request) -> typing.Optional[typing.Dict[str, typing.Any]]:
@@ -158,8 +183,9 @@ async def validate_csrf(session_data):
     if datetime.datetime.utcnow() > row["csrfexpiry"]:
         new_token = gen_csrf()
         new_expiry = datetime.datetime.utcnow() + datetime.timedelta(hours=12)
-        await db.execute("UPDATE users SET csrfToken = :csrfToken, csrfExpiry = :csrfExpiry",
-                         {"csrfToken": new_token, "csrfExpiry": new_expiry})
+        await db.execute("UPDATE users SET csrfToken = :csrfToken, csrfExpiry = :csrfExpiry WHERE"
+                         " snowflake = :id", {"csrfToken": new_token, "csrfExpiry": new_expiry,
+                                              "id": session_data["snowflake"]})
         raise ExpiredCSRFToken()
     # -------------------------
     # if csrf_token is not None:

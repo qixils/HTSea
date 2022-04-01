@@ -4,7 +4,6 @@ CREATE TABLE IF NOT EXISTS users (
     discriminator integer NOT NULL,
     avatar VARCHAR(128),
     minecraft uuid UNIQUE,
-    minecraftSecret CHAR(10),
     wordleWord CHAR(5) NOT NULL,
     wordleGuesses CHAR(5)[6] NOT NULL DEFAULT ARRAY[]::CHAR(5)[],
     wordleCooldown timestamp,
@@ -30,7 +29,7 @@ CREATE TABLE IF NOT EXISTS htnfts (
     mintedAt timestamp NOT NULL,
     currentPrice NUMERIC(8,3),
     embeds json[],
-    attachments bigint[]
+    attachments bigint[],
     currentOwner bigint references users(snowflake)
 );
 

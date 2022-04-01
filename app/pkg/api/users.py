@@ -20,79 +20,60 @@ httpClient = HttpClient()
 async def startup():
     httpClient.start()
 
+
 # flow for starting from discord auth url
 @route.get("/register", response_class=fastapi.responses.HTMLResponse)
 async def register(user_req: Request,
-                   user_resp: Response,
                    http_client: aiohttp.ClientSession = Depends(httpClient),
-                   words: Wordlist = Depends(Wordlist),
                    code: typing.Optional[str] = None):
-    # TODO: this should connect a minecraft account to an existing account.
-    #  accounts should not be registered here. (GH#2)
     if user_req.cookies.get("webToken"):
-        user_resp.status_code = HTTPStatus.BAD_REQUEST
-        return "You are already logged in. Try logging out by clearing your cookies for this site."
+        return HTMLResponse(content="<h1>You are already logged in!</h1>",
+                            status_code=HTTPStatus.BAD_REQUEST)
 
     try:
         # TODO: janky way to set a redirect URI
-        res = await get_user_auth_data(http_client, code, os.getenv("API_URL_PREFIX") + user_req.scope['path'])
+        redirect_uri = os.getenv("API_URL_PREFIX") + user_req.scope['path']
+        res = await get_user_auth_data(http_client, code, redirect_uri)
     except ApiException as e:
-        user_resp.status_code = e.status_code
-        return e.message
+        return JSONResponse(content=e.message, status_code=e.status_code)
 
-    # TODO: be more careful passing res into SQL
-    res['minecraft_secret'] = gen_mc_secret()
-    res['wordle_word'] = random.choice(words.get_list())
-    res['csrftoken'] = gen_csrf()
-    res['csrfexpiry'] = datetime.datetime.utcnow() + datetime.timedelta(hours=12)
-    await db.execute("INSERT INTO users (snowflake, name, discriminator, avatar, accesstoken, refreshtoken, webToken,"
-                     " minecraftSecret, wordleWord, csrftoken, csrfexpiry) VALUES (:id, :username, :discriminator, :avatar, :accesstoken, "
-                     ":refreshtoken, :secret, :minecraft_secret, :wordle_word, :csrftoken, :csrfexpiry) "
-                     "ON CONFLICT (snowflake)"
-                     "DO UPDATE SET (name, discriminator, avatar, accesstoken, refreshtoken, webToken, minecraftSecret, csrftoken, csrfexpiry) = "
-                     "(EXCLUDED.name, EXCLUDED.discriminator, EXCLUDED.avatar, EXCLUDED.accesstoken, EXCLUDED.refreshtoken,"
-                     "EXCLUDED.webToken, EXCLUDED.minecraftSecret, EXCLUDED.csrftoken, EXCLUDED.csrfexpiry);", res)
-    content = f"<h1>You're now registered with code {res['minecraft_secret']}, input it into minecraft ig now</h1>"
-    response = HTMLResponse(content=content)
-    response.set_cookie(key="webToken", value=res['secret'], samesite="strict", httponly=True, secure=True)
+    response = HTMLResponse(content="<h1>Your account has successfully been created!</h1>")
+    if res['cookie']:
+        response.set_cookie(**res['cookie'])
     return response
 
 
 # flow for starting from in minecraft - continued from ../main.py::connect_minecraft_acct()
 # DRY rolling in its grave
-
-# SHOULDN'T BE USED YET
 @route.get("/registermc")
 async def register_mc(user_req: Request,
-                      user_resp: Response,
                       http_client: aiohttp.ClientSession = Depends(httpClient),
-                      words: Wordlist = Depends(Wordlist),
                       code: typing.Optional[str] = None):
-    if user_req.cookies.get("webToken"):
-        user_resp.status_code = HTTPStatus.BAD_REQUEST
-        return "You are already logged in. Try logging out by clearing your cookies for this site."
-
     try:
         # TODO: janky way to set a redirect URI
-        res = await get_user_auth_data(http_client, code, os.getenv("API_URL_PREFIX") + user_req.scope['path'])
+        redirect_uri = os.getenv("API_URL_PREFIX") + user_req.scope['path']
+        res = await get_user_auth_data(http_client, code, redirect_uri)
     except ApiException as e:
-        user_resp.status_code = e.status_code
-        return e.message
+        return JSONResponse(content=e.message, status_code=e.status_code)
 
-    res['minecraft'] = user_req.cookies.get("mcuuid")
-    res['wordle_word'] = random.choice(words.get_list())
-    res['csrftoken'] = gen_csrf()
-    res['csrfexpiry'] = datetime.datetime.utcnow() + datetime.timedelta(hours=12)
-    await db.execute("INSERT INTO users (snowflake, name, discriminator, avatar, "
-                     "accesstoken, refreshtoken, webToken, minecraft, csrftoken, csrfexpiry, wordleword) VALUES "
-                     "(:id, :username, :discriminator, :avatar, :accesstoken, :refreshtoken, :secret,"
-                     ":minecraft, :csrftoken, :csrfexpiry, :wordle_word)",
-                     res)
-    await db.execute("DELETE FROM queue WHERE mcuuid=:mcuuid", {"mcuuid": res['minecraft']})
-    content = f"<h1>You're now registered!</h1>"
-    response = HTMLResponse(content=content)
-    response.set_cookie(key="webToken", value=res['secret'], samesite="strict", httponly=True, secure=True)
+    by_snowflake = await db.fetch_one("SELECT minecraft FROM users WHERE snowflake=:id",
+                                      {'id': res['id']})
+    if by_snowflake and by_snowflake['minecraft']:
+        return HTMLResponse(content=f"<h1>You have already connected a Minecraft account!</h1>",
+                            status_code=HTTPStatus.BAD_REQUEST)
+    by_uuid = await db.fetch_one("SELECT * FROM users WHERE minecraft=:uuid", {'uuid': res['uuid']})
+    if by_uuid:
+        return HTMLResponse(content=f"<h1>That Minecraft account is already registered!</h1>",
+                            status_code=HTTPStatus.BAD_REQUEST)
+
+    await db.execute("UPDATE users SET minecraft=:uuid WHERE snowflake=:id", {'uuid': res['uuid'],
+                                                                              'id': res['id']})
+    response = HTMLResponse(content=
+                            f"<h1>You have successfully connected your Minecraft account!</h1>")
+    if res['cookie']:
+        response.set_cookie(**res['cookie'])
     return response
+
 
 @route.get("/mc/secret")
 async def get_secret(req: Request):
