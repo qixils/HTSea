@@ -55,6 +55,12 @@ async def mint_htnft(req: Request,
     if validate_resp := validate_internal_request(req):
         return validate_resp
     data = await req.json()
+    if data['message']['authorID'] != data['user_id']:
+        return JSONResponse(content=jsonable_encoder({
+            'success': False,
+            'error': 'CANNOT_MINT_OTHERS_MESSAGES'
+        }))
+
     async with db.transaction():
         user = await get_user_data(int(data['user_id']))
         if user is None:
