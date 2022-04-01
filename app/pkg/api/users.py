@@ -51,6 +51,8 @@ async def register(user_req: Request,
                    http_client: aiohttp.ClientSession = Depends(httpClient),
                    words: Wordlist = Depends(Wordlist),
                    code: typing.Optional[str] = None):
+    # TODO: this should connect a minecraft account to an existing account.
+    #  accounts should not be registered here. (GH#2)
     if user_req.cookies.get("webToken"):
         user_resp.status_code = HTTPStatus.BAD_REQUEST
         return "You are already logged in. Try logging out by clearing your cookies for this site."

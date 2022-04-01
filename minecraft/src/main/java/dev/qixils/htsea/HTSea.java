@@ -5,6 +5,7 @@ import cloud.commandframework.execution.AsynchronousCommandExecutionCoordinator;
 import cloud.commandframework.paper.PaperCommandManager;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import dev.qixils.htsea.responses.ProfileResponse;
 import dev.qixils.htsea.responses.Response;
 import dev.qixils.htsea.responses.SecretResponse;
 import net.kyori.adventure.text.Component;
@@ -33,8 +34,14 @@ import java.util.function.Consumer;
 
 public final class HTSea extends JavaPlugin implements Listener {
 
+	private static final Component WELCOME = Component.text("Welcome to the ", NamedTextColor.GOLD)
+			.append(Component.text("HTSea Minecraft Server", NamedTextColor.AQUA))
+			.append(Component.text("! "));
+	private static final Component WELCOME_ERROR = WELCOME
+			.append(Component.text("We seem to be experiencing some issues right now. " +
+					"Some services may not function as expected. " +
+					"We apologize for the inconvenience."));
 	private static final Gson GSON = new GsonBuilder().serializeNulls().create();
-	private final MainMenu menu = new MainMenu(this);
 	private @Nullable String apiSecret;
 	private @Nullable String apiHost;
 	private @Nullable PaperCommandManager<CommandSender> commandManager;
@@ -65,9 +72,9 @@ public final class HTSea extends JavaPlugin implements Listener {
 
 		// commands
 		commandManager.command(
-				commandManager.commandBuilder("htsea", ArgumentDescription.of("Opens the HTSea menu for managing your wallet"))
+				commandManager.commandBuilder("vault", ArgumentDescription.of("Opens the vault menu for managing your wallet"))
 						.senderType(Player.class)
-						.handler(ctx -> menu.getInventory().open((Player) ctx.getSender()))
+						.handler(ctx -> new MainMenu(this).open((Player) ctx.getSender()))
 		);
 	}
 
@@ -94,11 +101,11 @@ public final class HTSea extends JavaPlugin implements Listener {
 
 	/**
 	 * Sends a request to the API.
-	 * The returned object is guaranteed to not {@link Response#hasError() have an error}.
 	 *
 	 * @param responseClass the class of the expected response type
 	 * @param file          the path to request from the API
 	 * @param requestMethod the HTTP method to use
+	 * @param allowErrors   whether to return the response even if it has an error
 	 * @param connConsumer  a consumer that will be called with the connection to modify it before
 	 *                      sending the request
 	 * @param <R>           the expected response type
@@ -108,10 +115,11 @@ public final class HTSea extends JavaPlugin implements Listener {
 	public <R extends Response> R request(@NotNull Class<R> responseClass,
 										  @NotNull String file,
 										  @NotNull String requestMethod,
+										  boolean allowErrors,
 										  @Nullable Consumer<HttpURLConnection> connConsumer) {
 		URL url;
 		try {
-			url = new URL("https", apiHost, "api/users/secret");
+			url = new URL("https", apiHost, file);
 		} catch (MalformedURLException e) {
 			throw new IllegalStateException("Failed to create API URL", e);
 		}
@@ -140,10 +148,11 @@ public final class HTSea extends JavaPlugin implements Listener {
 				content.append(inputLine);
 			in.close();
 			R response = GSON.fromJson(content.toString(), responseClass);
-			if (status != HttpURLConnection.HTTP_OK || response.hasError()) {
+			if (!allowErrors && (status != HttpURLConnection.HTTP_OK || response.hasError())) {
 				getSLF4JLogger().warn("Failed to get data. Error: " + status + ' ' + response.error);
 				return null;
 			}
+			response.status = status;
 			return response;
 		} catch (IOException e) {
 			getSLF4JLogger().error("Failed to open connection to API", e);
@@ -153,30 +162,50 @@ public final class HTSea extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void onJoin(PlayerJoinEvent event) {
+		Player player = event.getPlayer();
 		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
-			SecretResponse response = request(SecretResponse.class, "api/users/secret", "GET", conn -> {
+			SecretResponse response = request(SecretResponse.class, "api/users/mc/secret", "GET", false, conn -> {
 				conn.setDoOutput(true);
 				try {
 					DataOutputStream out = new DataOutputStream(conn.getOutputStream());
-					out.writeBytes("uuid=" + event.getPlayer().getUniqueId());
+					out.writeBytes("uuid=" + player.getUniqueId());
 					out.flush();
 					out.close();
 				} catch (IOException e) {
 					throw new RuntimeException("Failed to set query string", e);
 				}
 			});
-			if (response == null)
+			if (response == null) {
+				player.sendMessage(WELCOME_ERROR);
 				return;
-			if (!response.hasData())
+			}
+			if (!response.hasData()) {
+				ProfileResponse profile = request(ProfileResponse.class,
+						"api/users/mc/profile?uuid=" + player.getUniqueId(),
+						"GET",
+						true,
+						null
+				);
+				if (profile == null || profile.hasError() || !profile.hasData()) {
+					player.sendMessage(WELCOME_ERROR);
+					return;
+				}
+				player.sendMessage(WELCOME
+						.append(Component.text(" You are logged in as "))
+						.append(Component.text(profile.getName() + '#' + profile.getDiscriminatorString()))
+						.append(Component.text('.')));
 				return;
-			Component message = Component.text()
-					.content("Welcome to the ")
-					.color(NamedTextColor.GOLD)
-					.append(Component.text("HTSea Minecraft Server", NamedTextColor.AQUA))
-					.append(Component.text("! To begin your adventure, please visit "))
-					.append(Component.text("this page", NamedTextColor.YELLOW, TextDecoration.UNDERLINED).clickEvent(ClickEvent.openUrl("https://htsea.qixils.dev/api/users/connect?uuid=" + event.getPlayer().getUniqueId() + "&secret=" + response.secret)))
-					.append(Component.text(" to create your account and start earning Diamonds.")).build();
-			event.getPlayer().sendMessage(message);
+			}
+			Component message = WELCOME
+					.append(Component.text("To begin your adventure, please visit "))
+					.append(Component.text("this page", NamedTextColor.YELLOW, TextDecoration.UNDERLINED)
+							.clickEvent(ClickEvent.openUrl("https://htsea.qixils.dev/api/users/connect?uuid=" + player.getUniqueId() + "&secret=" + response.secret)))
+					.append(Component.text(" to create your account and start earning Diamonds."));
+			player.sendMessage(message);
 		});
 	}
+
+	// TODO add congratulatory message for picking up a diamond if it's their first time doing it
+	//  (since server startup) and their balance is 0 to inform them of the /vault command
+	//  or add another parameter to the database (meh)
 }
