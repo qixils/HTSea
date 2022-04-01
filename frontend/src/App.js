@@ -11,12 +11,13 @@ function App() {
           The digital revolution is upon us.
           Using our patent-pending e-currency technology codenamed Diamonds, we empower creators
           like you to take ownership of your one-of-a-kind centralized assets.
-          On any participating Discord server, simply right click any message you've sent and click on
-          <b>Mint HTNFT</b> to create your piece of digital history.
-          Before you do that, you'll need to mine some Diamonds using our state-of-the-art technology.
-          Diamonds can be obtained through the tried-and-true method of mining them on the
-          <b>mc.qixils.dev</b> Minecraft: Java Edition server or by completing rounds of the hit game
-          Wordle.
+          On any participating Discord server, simply right click any message you've sent and click
+          on <b>Mint HTNFT</b> to create your piece of digital history.
+          Before you do that, you'll need to mine some Diamonds using our state-of-the-art
+          technology.
+          Diamonds can be obtained through the tried-and-true method of mining them on
+          the <b>mc.qixils.dev</b> Minecraft: Java Edition server or by completing rounds of the hit
+          game Wordle.
         </p>
         <div className="button-wrapper">
           <WhiteButton><a href="/activity">Recent Activity</a></WhiteButton>

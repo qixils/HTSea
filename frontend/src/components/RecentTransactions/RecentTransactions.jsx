@@ -42,7 +42,7 @@ const RecentTransactions = () => {
             <span className={style.user}>
                 <img className={style.avatar} width="16" height="16" src={user.avatar} alt="Avatar"/>
                 <span className={style.username}> {user.name}</span>
-                <span className={style.discriminator}>{user.discriminator}</span>
+                <span className={style.discriminator}>#{user.discriminator.toString().padStart(4, '0')}</span>
             </span>
         </Link> : user
     );
