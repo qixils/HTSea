@@ -4,7 +4,6 @@ from fastapi.responses import JSONResponse
 from ..dependencies import *
 import collections
 import datetime
-import random
 
 route = APIRouter(prefix="/api/wordle")
 

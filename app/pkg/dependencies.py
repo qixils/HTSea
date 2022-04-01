@@ -22,6 +22,7 @@ db = databases.Database("postgresql://{}@db:5432/{}".format(
 # wordlist singleton, why not
 class Wordlist:
     wordlist = None
+    genlist = None
 
     def __init__(self):
         pass
@@ -33,10 +34,18 @@ class Wordlist:
             with open("words.txt", "r") as words:
                 cls.wordlist = words.read().strip().split("\n")
         return cls.wordlist
+    
+    @classmethod
+    def get_gen_list(cls):
+        if cls.genlist is None:
+            print(os.listdir())
+            with open("popular_words.txt", "r") as words:
+                cls.genlist = words.read().strip().split("\n")
+        return cls.genlist
 
     @classmethod
     def get_random_word(cls):
-        return random.choice(cls.get_list())
+        return random.choice(cls.get_gen_list())
 
 
 class HttpClient:
