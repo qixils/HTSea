@@ -109,22 +109,18 @@ public final class MainMenu implements IInventory {
 			Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 				EmptyResponse response = plugin.request(
 						EmptyResponse.class,
-						"api/users/mc/add_diamonds",
+						"api/users/mc/" + player.getUniqueId() + "/add_diamonds/" + transactionTally,
 						"POST",
 						true,
-						conn -> {
-
-						}
+						null
 				);
 				Component message;
-				if (response == null || response.hasError()) {
+				if (response.hasError()) {
 					message = Component.text("An error occurred while attempting to perform this transaction.", NamedTextColor.RED);
-					if (response != null) {
-						String error = " The error was " + response.status;
-						if (response.error != null)
-							error += ' ' + response.error;
-						message = message.append(Component.text(error, NamedTextColor.GRAY));
-					}
+					String error = " The error was " + response.status;
+					if (response.error != null)
+						error += ' ' + response.error;
+					message = message.append(Component.text(error, NamedTextColor.GRAY));
 				} else
 					message = Component.text("Your ", NamedTextColor.GREEN)
 							.append(transactionTally > 0 ? Component.text("deposit", NamedTextColor.GREEN) : Component.text("withdrawal", NamedTextColor.RED))
