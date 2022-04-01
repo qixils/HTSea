@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 import fastapi
 from fastapi import APIRouter, Depends, Request, Response
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.encoders import jsonable_encoder
 from ..dependencies import *
 
@@ -27,8 +27,7 @@ async def register(user_req: Request,
                    http_client: aiohttp.ClientSession = Depends(httpClient),
                    code: typing.Optional[str] = None):
     if user_req.cookies.get("webToken"):
-        return HTMLResponse(content="<h1>You are already logged in!</h1>",
-                            status_code=HTTPStatus.BAD_REQUEST)
+        return RedirectResponse(url="/", status_code=HTTPStatus.FOUND)
 
     try:
         # TODO: janky way to set a redirect URI
@@ -37,7 +36,7 @@ async def register(user_req: Request,
     except ApiException as e:
         return JSONResponse(content=e.message, status_code=e.status_code)
 
-    response = HTMLResponse(content="<h1>Your account has successfully been created!</h1>")
+    response = RedirectResponse(url="/", status_code=HTTPStatus.FOUND)
     if res['cookie']:
         response.set_cookie(**res['cookie'])
     return response
