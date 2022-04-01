@@ -20,6 +20,21 @@ httpClient = HttpClient()
 async def startup():
     httpClient.start()
 
+@route.get("/{user_id}")
+async def get_user(req: Request, resp: Response, user_id: int):
+    user = await get_user_profile_data(user_id)
+    if user is None:
+        return JSONResponse(content=jsonable_encoder({
+            'success': False,
+            'error': 'Not Found'
+        }), status_code=404)
+    
+    payload = {
+        'success': 'true',
+        'user': user
+    }
+
+    return JSONResponse(content=jsonable_encoder(payload))
 
 @route.get("/cookie")
 async def retcookie():  # TODO: remove in production
@@ -36,6 +51,8 @@ async def register(user_req: Request,
                    http_client: aiohttp.ClientSession = Depends(httpClient),
                    words: Wordlist = Depends(Wordlist),
                    code: typing.Optional[str] = None):
+    # TODO: this should connect a minecraft account to an existing account.
+    #  accounts should not be registered here. (GH#2)
     if user_req.cookies.get("webToken"):
         user_resp.status_code = HTTPStatus.BAD_REQUEST
         return "You are already logged in. Try logging out by clearing your cookies for this site."

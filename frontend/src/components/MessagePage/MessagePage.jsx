@@ -4,19 +4,10 @@ import diamond from '../../icons/diamond.png';
 import {useCallback} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {useParams, Link} from 'react-router-dom';  
-import cls from 'classnames';
 import MessageList from '../MessageList/MessageList';
+import {BlueButton, WhiteButton} from '../Sea/SeaButton';
 
 import {MESSAGE_IDLE, getMessage, MESSAGE_UPDATING, MESSAGE_SUCCESS} from '../../redux/message';
-
-function Button(props) {
-    return (<button 
-            className={cls(style.nftbutton, {[style.nbb]: props.invert, [style.nbw]: !props.invert})}
-            onClick={props.onClick}
-            >
-                {props.content}
-        </button>);
-}
 
 function Price(props) {
     return <div className={style["sale-price"]}>
@@ -25,7 +16,7 @@ function Price(props) {
     </div>
 }
 
-function BuyButton(props) {
+function BuyButtons(props) {
     let {msg} = props;
     return <div className={style["sale-wrapper"]}>
         {msg.currentPrice != null ?
@@ -33,15 +24,16 @@ function BuyButton(props) {
             <div>Current price</div>
             <Price price={msg.currentPrice} />
          </> :
-         <>
-            <div>Highest offer</div>
-            <Price price="TODO" />
-         </>
+        //  <>
+        //     <div>Highest offer</div>
+        //     <Price price="TODO" />
+        //  </>
+        null
     }
         <div className={style["nftbutton-wrapper"]}>
             {(msg.currentPrice != null) ? 
-            <Button invert={true} content="Buy now" /> : null}
-            <Button content="Make offer" />
+            <BlueButton>Buy now</BlueButton> : null}
+            {/* <WhiteButton>Make offer</WhiteButton> */}
         </div>
     </div>;
 }
@@ -80,7 +72,7 @@ const MessagePage = () => {
                 <div className={style["author-header"]}>Owned by <Link to={`/users/${message.authorID}`}>{users[message.authorID].name}#{users[message.authorID].discriminator}</Link></div>
             </div>
             <MessageList messageData={messageData} />
-            <BuyButton msg={message} />
+            <BuyButtons msg={message} />
             {/* transaction table here */}
         </div>
     );
