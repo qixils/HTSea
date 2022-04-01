@@ -148,16 +148,18 @@ async def get_user_auth_data(http_client: aiohttp.ClientSession,
         }
     }
     # create a new user if they don't exist
-    if not (await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": to_return["id"]})):
+    if not (await db.fetch_one("SELECT * FROM users WHERE snowflake = :id",
+                               {"id": to_return["id"]})):
         to_return["should_set_cookie"] = True
         await db.execute("INSERT INTO users (snowflake, name, discriminator, avatar, wordleword, "
                          "accesstoken, refreshtoken, webtoken, csrftoken, csrfexpiry) VALUES (:id, "
                          ":name, :discriminator, :avatar, :wordleword, :accesstoken, "
                          ":refreshtoken, :webtoken, :csrftoken, :csrfexpiry)", {
-            "id": res["id"], "name": res["username"], "discriminator": res["discriminator"],
-            "avatar": to_return["avatar"], "wordleword": Wordlist.get_random_word(),
-            "accesstoken": to_return["accesstoken"], "refreshtoken": to_return["refreshtoken"],
-            "webtoken": to_return["secret"], "csrftoken": gen_csrf(),
+            "id": to_return["id"], "name": to_return["username"],
+            "discriminator": to_return["discriminator"], "avatar": to_return["avatar"],
+            "wordleword": Wordlist.get_random_word(), "accesstoken": to_return["accesstoken"],
+            "refreshtoken": to_return["refreshtoken"], "webtoken": to_return["secret"],
+            "csrftoken": gen_csrf(),
             "csrfexpiry": datetime.datetime.utcnow() + datetime.timedelta(hours=12)
         })
     return to_return
