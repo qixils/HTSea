@@ -160,3 +160,14 @@ async def validate_user(session_token: str, csrf_token: str = None):
                               "new_token": new_token})
             return False
     return True
+
+async def get_user_profile_data(user_id:int) -> typing.Optional[typing.Dict[str, typing.Any]]:
+    user = await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": user_id})
+    if user is None:
+        return None
+    return {
+        'name': user['name'],
+        'discriminator': user['discriminator'],
+        'avatar': user['avatar'],
+        'diamonds': user['diamonds']
+    }

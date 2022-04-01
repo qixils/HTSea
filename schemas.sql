@@ -33,9 +33,6 @@ CREATE TABLE IF NOT EXISTS htnfts (
     attachments bigint[]
 );
 
---  ^^^ reactions id
--- wait nvm i dont need to use those fields bc the table stores them by id anyways
-
 CREATE TABLE IF NOT EXISTS transactions (
     id uuid PRIMARY KEY NOT NULL,
     message bigint references htnfts(messageSnowflake),
@@ -45,6 +42,8 @@ CREATE TABLE IF NOT EXISTS transactions (
     timestamp timestamp
 );
 --  ^^^ id is md5(all other trans data)
+
+CREATE INDEX IF NOT EXISTS idx_tx_timestamp ON transactions (id, timestamp);
 
 CREATE TABLE IF NOT EXISTS guilds (
     snowflake bigint PRIMARY KEY NOT NULL,
