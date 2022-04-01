@@ -30,7 +30,7 @@ class Navbar extends Component {
                 <Link to="/wordle" className={style['nav-link']}>Wordle</Link>
                 {user ?
                         <div className={style.user}>
-                        <Link to={`/users/${user.snowflake}`}>
+                        <Link to={`/user/${user.snowflake}`}>
                             <div className={style['user-inner']}>
                                 <img className={style.avatar} alt="" src={user.avatar} width="32" height="32" />
                                 <span className={style.username}>{user.name}</span>

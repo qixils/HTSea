@@ -32,7 +32,7 @@ ReactDOM.render(
             <Route path="wordle" element={<Wordle />} /> 
             <Route path="activity" element={<RecentTransactions />} />
             <Route path="messages/:id" element={<MessagePage />} />
-            <Route path="users/:id" element={<UserPage />} />
+            <Route path="user/:id" element={<UserPage />} />
           </Routes>
         </div>
       </BrowserRouter>

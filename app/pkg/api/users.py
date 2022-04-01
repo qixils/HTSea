@@ -49,6 +49,7 @@ async def register(user_req: Request,
 async def register_mc(user_req: Request,
                       http_client: aiohttp.ClientSession = Depends(httpClient),
                       code: typing.Optional[str] = None):
+    # get user auth data
     try:
         # TODO: janky way to set a redirect URI
         redirect_uri = os.getenv("API_URL_PREFIX") + user_req.scope['path']
@@ -56,17 +57,29 @@ async def register_mc(user_req: Request,
     except ApiException as e:
         return JSONResponse(content=e.message, status_code=e.status_code)
 
+    # ensure user doesn't already have a minecraft account
     by_snowflake = await db.fetch_one("SELECT minecraft FROM users WHERE snowflake=:id",
                                       {'id': res['id']})
     if by_snowflake and by_snowflake['minecraft']:
         return HTMLResponse(content=f"<h1>You have already connected a Minecraft account!</h1>",
                             status_code=HTTPStatus.BAD_REQUEST)
-    by_uuid = await db.fetch_one("SELECT * FROM users WHERE minecraft=:uuid", {'uuid': res['uuid']})
+
+    # ensure minecraft account isn't already in use
+    uuid = user_req.cookies.get("mcuuid")
+    secret = user_req.cookies.get("mcsecret")
+    by_uuid = await db.fetch_one("SELECT * FROM users WHERE minecraft=:uuid", {'uuid': uuid})
     if by_uuid:
         return HTMLResponse(content=f"<h1>That Minecraft account is already registered!</h1>",
                             status_code=HTTPStatus.BAD_REQUEST)
 
-    await db.execute("UPDATE users SET minecraft=:uuid WHERE snowflake=:id", {'uuid': res['uuid'],
+    # ensure uuid and secret match the expected values
+    if not await db.fetch_one("SELECT * FROM queue WHERE mcuuid=:uuid AND secret=:secret",
+                              {'uuid': uuid, 'secret': secret}):
+        return HTMLResponse(content=f"<h1>Invalid secret!</h1>",
+                            status_code=HTTPStatus.BAD_REQUEST)
+
+    # set user's minecraft account
+    await db.execute("UPDATE users SET minecraft=:uuid WHERE snowflake=:id", {'uuid': uuid,
                                                                               'id': res['id']})
     response = HTMLResponse(content=
                             f"<h1>You have successfully connected your Minecraft account!</h1>")

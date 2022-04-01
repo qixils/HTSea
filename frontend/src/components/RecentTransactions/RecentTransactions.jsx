@@ -38,7 +38,7 @@ const RecentTransactions = () => {
     console.log(transactions, users);
 
     const inlineUser = user => ( user ?
-        <Link to={`/users/${user.id}`}>
+        <Link to={`/user/${user.id}`}>
             <span className={style.user}>
                 <img className={style.avatar} width="16" height="16" src={user.avatar} alt="Avatar"/>
                 <span className={style.username}> {user.name}</span>

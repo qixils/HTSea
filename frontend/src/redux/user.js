@@ -75,7 +75,7 @@ const userReducer = (state, action) => {
 
 const getUser = (dispatch, id) => {
     dispatch(userUpdating(id));
-    api(`/api/users/${id}`)
+    api(`/api/user/${id}`)
         .then(res => {
             dispatch(userSuccess(res, id));
         })
