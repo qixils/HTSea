@@ -16,7 +16,7 @@ function Price(props) {
     </div>
 }
 
-function BuyButton(props) {
+function BuyButtons(props) {
     let {msg} = props;
     return <div className={style["sale-wrapper"]}>
         {msg.currentPrice != null ?
@@ -24,15 +24,16 @@ function BuyButton(props) {
             <div>Current price</div>
             <Price price={msg.currentPrice} />
          </> :
-         <>
-            <div>Highest offer</div>
-            <Price price="TODO" />
-         </>
+        //  <>
+        //     <div>Highest offer</div>
+        //     <Price price="TODO" />
+        //  </>
+        null
     }
         <div className={style["nftbutton-wrapper"]}>
             {(msg.currentPrice != null) ? 
             <BlueButton>Buy now</BlueButton> : null}
-            <WhiteButton>Make offer</WhiteButton>
+            {/* <WhiteButton>Make offer</WhiteButton> */}
         </div>
     </div>;
 }
@@ -71,7 +72,7 @@ const MessagePage = () => {
                 <div className={style["author-header"]}>Owned by <Link to={`/users/${message.authorID}`}>{users[message.authorID].name}#{users[message.authorID].discriminator}</Link></div>
             </div>
             <MessageList messageData={messageData} />
-            <BuyButton msg={message} />
+            <BuyButtons msg={message} />
             {/* transaction table here */}
         </div>
     );
