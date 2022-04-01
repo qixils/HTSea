@@ -21,14 +21,6 @@ async def startup():
     httpClient.start()
 
 
-@route.get("/cookie")
-async def retcookie():  # TODO: remove in production
-    content = "<b>your mother was a hamster and your father smelt of elderberries</b>"
-    response = fastapi.responses.HTMLResponse(content=content)
-    response.set_cookie(key="session", value="AABBBCB")
-    return response
-
-
 # flow for starting from discord auth url
 @route.get("/register", response_class=fastapi.responses.HTMLResponse)
 async def register(user_req: Request,
@@ -50,25 +42,30 @@ async def register(user_req: Request,
     # TODO: be more careful passing res into SQL
     res['minecraft_secret'] = gen_mc_secret()
     res['wordle_word'] = random.choice(words.get_list())
+    res['csrftoken'] = gen_csrf()
+    res['csrfexpiry'] = datetime.datetime.utcnow() + datetime.timedelta(hours=12)
     await db.execute("INSERT INTO users (snowflake, name, discriminator, avatar, accesstoken, refreshtoken, webToken,"
-                     " minecraftSecret, wordleWord) VALUES (:id, :username, :discriminator, :avatar, :accesstoken, "
-                     ":refreshtoken, :secret, :minecraft_secret, :wordle_word) "
+                     " minecraftSecret, wordleWord, csrftoken, csrfexpiry) VALUES (:id, :username, :discriminator, :avatar, :accesstoken, "
+                     ":refreshtoken, :secret, :minecraft_secret, :wordle_word, :csrftoken, :csrfexpiry) "
                      "ON CONFLICT (snowflake)"
                      "DO UPDATE SET (name, discriminator, avatar, accesstoken, refreshtoken, webToken, minecraftSecret) = "
                      "(EXCLUDED.name, EXCLUDED.discriminator, EXCLUDED.avatar, EXCLUDED.accesstoken, EXCLUDED.refreshtoken,"
-                     "EXCLUDED.webToken, EXCLUDED.minecraftSecret);", res)
+                     "EXCLUDED.webToken, EXCLUDED.minecraftSecret, EXCLUDED.csrftoken, EXCLUDED.csrfexpiry);", res)
     content = f"<h1>You're now registered with code {res['minecraft_secret']}, input it into minecraft ig now</h1>"
     response = HTMLResponse(content=content)
-    response.set_cookie(key="webToken", value=res['secret'])
+    response.set_cookie(key="webToken", value=res['secret'], samesite="strict", httponly=True, secure=True)
     return response
 
 
 # flow for starting from in minecraft - continued from ../main.py::connect_minecraft_acct()
 # DRY rolling in its grave
+
+# SHOULDN'T BE USED YET
 @route.get("/registermc")
 async def register_mc(user_req: Request,
                       user_resp: Response,
                       http_client: aiohttp.ClientSession = Depends(httpClient),
+                      words: Wordlist = Depends(Wordlist),
                       code: typing.Optional[str] = None):
     if user_req.cookies.get("webToken"):
         user_resp.status_code = HTTPStatus.BAD_REQUEST
@@ -82,14 +79,18 @@ async def register_mc(user_req: Request,
         return e.message
 
     res['minecraft'] = user_req.cookies.get("mcuuid")
+    res['wordle_word'] = random.choice(words.get_list())
+    res['csrftoken'] = gen_csrf()
+    res['csrfexpiry'] = datetime.datetime.utcnow() + datetime.timedelta(hours=12)
     await db.execute("INSERT INTO users (snowflake, name, discriminator, avatar, "
-                     "accesstoken, refreshtoken, webToken, minecraft) VALUES "
-                     "(:id, :username, :discriminator, :avatar, :accesstoken, :refreshtoken, :secret, :minecraft)",
+                     "accesstoken, refreshtoken, webToken, minecraft, csrftoken, csrfexpiry, wordleword) VALUES "
+                     "(:id, :username, :discriminator, :avatar, :accesstoken, :refreshtoken, :secret,"
+                     ":minecraft, :csrftoken, :csrfexpiry, :wordle_word)",
                      res)
     await db.execute("DELETE FROM queue WHERE mcuuid=:mcuuid", {"mcuuid": res['minecraft']})
     content = f"<h1>You're now registered!</h1>"
     response = HTMLResponse(content=content)
-    response.set_cookie(key="webToken", value=res['secret'])
+    response.set_cookie(key="webToken", value=res['secret'], samesite="strict", httponly=True, secure=True)
     return response
 
 @route.get("/mc/secret")
@@ -121,7 +122,7 @@ async def get_profile_by_uuid(req: Request):
     profile = await db.fetch_one("SELECT * FROM users WHERE minecraft=:uuid", {'uuid': uuid})
     if not profile:
         return JSONResponse({'error': 'The requested profile could not be found.'},
-                             HTTPStatus.NOT_FOUND)
+                            HTTPStatus.NOT_FOUND)
     return profile
 
 
