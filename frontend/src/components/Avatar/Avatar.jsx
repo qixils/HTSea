@@ -19,10 +19,9 @@ class Avatar extends Component {
 	}
 
 	getAvatarURL (size) {
-		if (this.props.user) {
-			return `https://cdn.discordapp.com/avatars/${this.props.user.id}/${this.props.user.avatar}.jpg?size=${size}`;
-		}
-		return '';
+		if (!this.props.user) return `https://cdn.discordapp.com/embed/avatars/0.png`;
+		if (!this.props.user.avatar) return `https://cdn.discordapp.com/embed/avatars/${this.props.user.discriminator % 5}.png`;
+		return `https://cdn.discordapp.com/avatars/${this.props.user.id}/${this.props.user.avatar}.jpg?size=${size}`;
 	}
 
 	render () {
