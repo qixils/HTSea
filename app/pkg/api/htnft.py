@@ -12,6 +12,7 @@ route = APIRouter(prefix="/api")
 # TODO vary the cost of minting an HTNFT
 MINT_COST = 1
 
+
 @route.post("/mint_check")
 async def mint_check(req: Request,
                      resp: Response):
@@ -148,6 +149,7 @@ async def mint_htnft(req: Request,
         'cost': MINT_COST,
     }))
 
+
 @route.get("/messages/{message_id}")
 async def get_message(req: Request, resp: Response, message_id: int):
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
@@ -188,6 +190,11 @@ async def get_message(req: Request, resp: Response, message_id: int):
     } for attachment in await db.fetch_all("SELECT * from referenced_attachments WHERE nftid = :id", {'id': message_id})}
 
     current_owner_profile = await get_user_profile_data(row['currentowner'])
+    highest_offer = await db.fetch_one("SELECT * FROM offers WHERE id=:id ORDER BY price DESC",
+                                       {'id': row['messagesnowflake']})
+    if highest_offer:
+        highest_offer = dict(highest_offer)
+        del highest_offer['id']
     message = {
         'messageID': str(row['messagesnowflake']),
         'channelID': str(row['channelsnowflake']),
@@ -197,6 +204,7 @@ async def get_message(req: Request, resp: Response, message_id: int):
         'mintedAt': None if row['mintedat'] is None else row['mintedat'].timestamp(),
         'currentPrice': row['currentprice'],
         'currentOwner': current_owner_profile,
+        'highestOffer': highest_offer,
         'embeds': [json.loads(embed) for embed in row['embeds']],
         'attachments': [str(attachment_id) for attachment_id in row['attachments']]
     }
@@ -211,6 +219,7 @@ async def get_message(req: Request, resp: Response, message_id: int):
     }
 
     return JSONResponse(content=jsonable_encoder(payload))
+
 
 @route.post("/messages/{message_id}/sell")
 async def sell_htnft(req: Request, resp: Response, message_id: int, csrf: str = None):
@@ -267,6 +276,7 @@ async def sell_htnft(req: Request, resp: Response, message_id: int, csrf: str = 
 
     return JSONResponse(content=jsonable_encoder({'success': True}))
 
+
 @route.post("/messages/{message_id}/cancel_sale")
 async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, csrf: str = None):
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
@@ -310,6 +320,7 @@ async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, csrf:
                     "WHERE messageSnowflake = :id", {'id': message_id})
 
     return JSONResponse(content=jsonable_encoder({'success': True}))
+
 
 @route.post("/messages/{message_id}/buy")
 async def buy_htnft(req: Request, resp: Response, message_id: int, csrf: str = None):
