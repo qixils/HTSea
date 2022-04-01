@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS htnfts (
     currentPrice NUMERIC(8,3),
     embeds json[],
     attachments bigint[]
+    currentOwner bigint references users(snowflake)
 );
 
 CREATE TABLE IF NOT EXISTS transactions (

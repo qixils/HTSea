@@ -2,15 +2,10 @@ from http import HTTPStatus
 from uuid import uuid4
 import json
 
-import fastapi
 from fastapi import APIRouter, Depends, Request, Response
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from ..dependencies import *
-
-import aiohttp
-import random
-import typing
 
 route = APIRouter(prefix="/api")
 
@@ -77,8 +72,8 @@ async def mint_htnft(req: Request,
         
         mint_time = datetime.datetime.now()
         
-        await db.execute("INSERT INTO htnfts (messageSnowflake, channelSnowflake, guildSnowflake, authorSnowflake, content, mintedAt, embeds, attachments) "
-                        "VALUES (:message_snowflake, :channel_snowflake, :guild_snowflake, :author_snowflake, :content, :minted_at, :embeds, :attachments)", {
+        await db.execute("INSERT INTO htnfts (messageSnowflake, channelSnowflake, guildSnowflake, authorSnowflake, content, mintedAt, embeds, attachments, currentOwner) "
+                        "VALUES (:message_snowflake, :channel_snowflake, :guild_snowflake, :author_snowflake, :content, :minted_at, :embeds, :attachments, :owner)", {
                             'message_snowflake': int(data['message']['id']),
                             'channel_snowflake': int(data['message']['channelID']),
                             'guild_snowflake': int(data['message']['guildID']),
@@ -86,7 +81,8 @@ async def mint_htnft(req: Request,
                             'content': data['message']['content'],
                             'minted_at': mint_time,
                             'embeds': [json.dumps(embed) for embed in data['message']['embeds']],
-                            'attachments': [int(attachment_id) for attachment_id in data['message']['attachments']]
+                            'attachments': [int(attachment_id) for attachment_id in data['message']['attachments']],
+                            'owner': int(user['snowflake'])
                         })
         
         await db.execute_many("INSERT INTO referenced_users (nftID, snowflake, name, nickname, discriminator, avatar) "
@@ -152,12 +148,6 @@ async def mint_htnft(req: Request,
         'cost': MINT_COST
     }))
 
-async def get_current_owner_id(htnft_id: int) -> int:
-    row = await db.fetch_one("SELECT * FROM transactions WHERE message = :id ORDER BY timestamp DESC", {"id": htnft_id})
-    if row is None:
-        raise Exception("HTNFT {} does not exist", htnft_id)
-    return row['buyer']
-
 @route.get("/messages/{message_id}")
 async def get_message(req: Request, resp: Response, message_id: int):
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
@@ -197,8 +187,7 @@ async def get_message(req: Request, resp: Response, message_id: int):
         'spoiler': attachment['spoiler']
     } for attachment in await db.fetch_all("SELECT * from referenced_attachments WHERE nftid = :id", {'id': message_id})}
 
-    current_owner_id = await get_current_owner_id(message_id)
-    current_owner_profile = await get_user_profile_data(current_owner_id)
+    current_owner_profile = await get_user_profile_data(row['currentowner'])
     message = {
         'messageID': str(row['messagesnowflake']),
         'channelID': str(row['channelsnowflake']),
@@ -232,7 +221,7 @@ async def sell_htnft(req: Request, resp: Response, message_id: int, csrf: str = 
             'error': 'Not Found'
         }), status_code=404)
     
-    current_owner = await get_current_owner_id(message_id)
+    current_owner = row['currentowner']
     user = await get_session_data(req)
     if not user:
         return JSONResponse(content=jsonable_encoder({
@@ -287,7 +276,7 @@ async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, csrf:
             'error': 'Not Found'
         }), status_code=404)
     
-    current_owner = await get_current_owner_id(message_id)
+    current_owner = row['currentowner']
     user = await get_session_data(req)
     if not user:
         return JSONResponse(content=jsonable_encoder({
@@ -365,7 +354,7 @@ async def buy_htnft(req: Request, resp: Response, message_id: int, csrf: str = N
                 'error': 'NOT_AFFORDABLE'
             }), status_code=400)
 
-        current_owner = await get_current_owner_id(message_id)
+        current_owner = row['currentowner']
         if current_owner == new_owner['snowflake']:
             return JSONResponse(content=jsonable_encoder({
                 'success': False,
@@ -381,8 +370,8 @@ async def buy_htnft(req: Request, resp: Response, message_id: int, csrf: str = N
                     'cost': row['currentprice'],
                     'timestamp': datetime.datetime.now()
                 })
-        await db.execute("UPDATE htnfts SET currentPrice = NULL "
-                "WHERE messageSnowflake = :id", {'id': message_id})
+        await db.execute("UPDATE htnfts SET (currentPrice, currentOwner) = (NULL, :owner) "
+                "WHERE messageSnowflake = :id", {'id': message_id, 'owner': new_owner['snowflake']})
         await db.execute("UPDATE users SET diamonds = diamonds - :price "
                 "WHERE snowflake = :id", {
                     'id': new_owner['snowflake'],

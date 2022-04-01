@@ -49,7 +49,7 @@ async def register(user_req: Request,
                      " minecraftSecret, wordleWord, csrftoken, csrfexpiry) VALUES (:id, :username, :discriminator, :avatar, :accesstoken, "
                      ":refreshtoken, :secret, :minecraft_secret, :wordle_word, :csrftoken, :csrfexpiry) "
                      "ON CONFLICT (snowflake)"
-                     "DO UPDATE SET (name, discriminator, avatar, accesstoken, refreshtoken, webToken, minecraftSecret) = "
+                     "DO UPDATE SET (name, discriminator, avatar, accesstoken, refreshtoken, webToken, minecraftSecret, csrftoken, csrfexpiry) = "
                      "(EXCLUDED.name, EXCLUDED.discriminator, EXCLUDED.avatar, EXCLUDED.accesstoken, EXCLUDED.refreshtoken,"
                      "EXCLUDED.webToken, EXCLUDED.minecraftSecret, EXCLUDED.csrftoken, EXCLUDED.csrfexpiry);", res)
     content = f"<h1>You're now registered with code {res['minecraft_secret']}, input it into minecraft ig now</h1>"
@@ -196,6 +196,9 @@ async def get_user(req: Request, resp: Response, user_id: int):
             'error': 'Not Found'
         }), status_code=404)
     
+    user['htnftIDs'] = [str(row['messagesnowflake']) for row in
+        await db.fetch_all("SELECT messageSnowflake from htnfts WHERE currentOwner = :id", {'id': user_id})]
+
     payload = {
         'success': 'true',
         'user': user

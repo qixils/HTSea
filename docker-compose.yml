@@ -15,6 +15,7 @@ services:
       - CLIENT_ID
       - CLIENT_SECRET
       - API_URL_PREFIX
+      - SKIP_CSRF_VALIDATION
     depends_on:
       - db
     ports:

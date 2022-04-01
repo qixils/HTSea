@@ -6,6 +6,7 @@ import {useSelector, useDispatch} from 'react-redux';
 import {useParams, Link} from 'react-router-dom';  
 import classNames from 'classnames';
 
+import Diamonds from '../Diamonds/Diamonds';
 import MessageList from '../MessageList/MessageList';
 import {BlueButton, WhiteButton} from '../Sea/SeaButton';
 import Modal from '../Modal/Modal';
@@ -14,12 +15,16 @@ import Loader from '../Loader/Loader';
 import {getMessage, buyMessage, sellMessage, cancelMessageSale, MESSAGE_IDLE, MESSAGE_UPDATING, MESSAGE_SUCCESS} from '../../redux/message';
 import {getSession, SESSION_IDLE, SESSION_PENDING, SESSION_SUCCESS} from '../../redux/session';
 
-function Price(props) {
-    return <span className={style["sale-price"]}>
-        <img className={style['diamond-icon']} src={diamond} width="24" height="26" alt="Diamonds" />
-        {props.price}
-    </span>
-}
+const ADJECTIVES = [
+    'Magnificent',
+    'Marvelous',
+    'Middling',
+    'Masterpiece',
+    'Maniacal',
+    'Majestic',
+    'Momentous',
+    'Mysterious'
+];
 
 const MessagePage = () => {
     const {id} = useParams();
@@ -47,7 +52,7 @@ const MessagePage = () => {
 
     if (
         (messageState.status === MESSAGE_IDLE) ||
-        (messageState.data?.message && messageState.data?.message.messageID !== id)
+        (messageState.id !== id)
     ) {
         getMessageCallback(id);
         return <div className={style.loading}><Loader /></div>;
@@ -86,12 +91,13 @@ const MessagePage = () => {
         }
     }
 
+    const adjective = ADJECTIVES[Number(message.messageID.slice(-5)) % ADJECTIVES.length];
 
     return (
         <div className={style['message-page']}>
             <Modal isOpen={buyModalOpen} onClose={() => setBuyModalOpen(false)}>
                 <div className={style['modal-contents']}>
-                    <div className={style['modal-row']}>Buy this message for <Price price={currentPrice}/>?</div>
+                    <div className={style['modal-row']}>Buy this message for <Diamonds diamonds={currentPrice}/>?</div>
                     <div className={classNames(style['modal-row'], style['modal-buttons'])}>
                         <BlueButton onClick={buyMessageCallback}>Buy</BlueButton>
                         <WhiteButton onClick={() => setBuyModalOpen(false)}>Cancel</WhiteButton>
@@ -113,14 +119,14 @@ const MessagePage = () => {
                 </div>
             </Modal>
             <div>
-                <h1>Malignant Message #{message.messageID}</h1>
+                <h1>{adjective} Message #{message.messageID}</h1>
                 <div className={style.owner}>Owned by <Link to={`/users/${owner.id}`}>{owner.name}#{owner.discriminator}</Link></div>
             </div>
             <MessageList messageData={messageData} />
             {currentPrice || buySellAction ?
             <div className={style["sale-wrapper"]}>
                 {currentPrice !== null ?
-                    <div>Current price: <Price price={currentPrice} /></div> :
+                    <div>Current price: <Diamonds diamonds={currentPrice} /></div> :
                     null}
                 {buySellAction}
             </div> :

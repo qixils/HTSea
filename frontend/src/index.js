@@ -12,6 +12,7 @@ import {Provider} from 'react-redux';
 import App from './App';
 import ErrorBanner from './components/ErrorBanner/ErrorBanner';
 import MessagePage from './components/MessagePage/MessagePage';
+import UserPage from './components/UserPage/UserPage';
 import Navbar from './components/Navbar/Navbar';
 import Wordle from './components/Wordle/Wordle';
 
@@ -29,6 +30,7 @@ ReactDOM.render(
             <Route path="/" element={<App />} /> 
             <Route path="wordle" element={<Wordle />} /> 
             <Route path="messages/:id" element={<MessagePage />} />
+            <Route path="users/:id" element={<UserPage />} />
           </Routes>
         </div>
       </BrowserRouter>

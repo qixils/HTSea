@@ -6,8 +6,6 @@ import classNames from 'classnames';
 
 import {getWordleInfo, guess, WORDLE_FAILURE, WORDLE_IDLE, WORDLE_UPDATING} from '../../redux/wordle';
 
-import api from '../../util/api';
-
 const letters = 'abcdefghijklmnopqrstuvwxyz'.split('');
 const alphabet = new Set(letters);
 const initialKeyboardState = {};

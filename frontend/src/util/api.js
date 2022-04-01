@@ -20,7 +20,7 @@ const api = (route, opts = {}) => {
     return fetch(
         url,
         // include credentials by default
-        Object.assign({credentials: 'same-origin'}, otherOpts)
+        Object.assign({credentials: 'include'}, otherOpts)
     )
     .then(res => res.json())
     .then(res => {

@@ -7,28 +7,32 @@ export const MESSAGE_UPDATING = 'MESSAGE_UPDATING';
 export const MESSAGE_SUCCESS = 'MESSAGE_SUCCESS';
 export const MESSAGE_ERROR = 'MESSAGE_ERROR';
 
-function messageUpdating() {
+function messageUpdating(id) {
     return {
-        type: MESSAGE_UPDATING
+        type: MESSAGE_UPDATING,
+        id
     }
 }
 
-function messageSuccess(data) {
+function messageSuccess(data, id) {
     return {
         type: MESSAGE_SUCCESS,
-        data
+        data,
+        id
     }
 }
 
-function messageError(error) {
+function messageError(error, id) {
     return {
         type: MESSAGE_ERROR,
-        error
+        error,
+        id
     }
 }
 
 export const initialState = {
-    status: MESSAGE_IDLE
+    status: MESSAGE_IDLE,
+    id: null
 };
 
 const messageReducer = (state, action) => {
@@ -39,6 +43,7 @@ const messageReducer = (state, action) => {
                 ...state,
                 message: {
                     ...state.message,
+                    id: action.id,
                     status: action.type
                 }
             }
@@ -48,6 +53,7 @@ const messageReducer = (state, action) => {
                 ...state,
                 message: {
                     ...state.message,
+                    id: action.id,
                     error: null,
                     status: action.type,
                     data: action.data
@@ -59,6 +65,7 @@ const messageReducer = (state, action) => {
                 ...state,
                 message: {
                     ...state.message,
+                    id: action.id,
                     status: action.type,
                     error: action.error
                 }
@@ -69,30 +76,30 @@ const messageReducer = (state, action) => {
 }
 
 const getMessage = (dispatch, id) => {
-    dispatch(messageUpdating());
+    dispatch(messageUpdating(id));
     api(`/api/messages/${id}`)
         .then(res => {
-            dispatch(messageSuccess(res));
+            dispatch(messageSuccess(res, id));
         })
         .catch(err => {
-            dispatch(messageError(err));
+            dispatch(messageError(err, id));
         });
 };
 
 const buyMessage = (dispatch, id) => {
-    dispatch(messageUpdating());
+    dispatch(messageUpdating(id));
     api(`/api/messages/${id}/buy`, {method: 'post'})
         .then(res => {
             dispatch(setDiamonds(res.newDiamonds));
             getMessage(dispatch, id);
         })
         .catch(err => {
-            dispatch(messageError(err));
+            dispatch(messageError(err, id));
         });
 };
 
 const sellMessage = (dispatch, id, price) => {
-    dispatch(messageUpdating());
+    dispatch(messageUpdating(id));
     api(`/api/messages/${id}/sell`, {
         method: 'post',
         body: JSON.stringify({price})
@@ -107,7 +114,7 @@ const sellMessage = (dispatch, id, price) => {
 };
 
 const cancelMessageSale = (dispatch, id, price) => {
-    dispatch(messageUpdating());
+    dispatch(messageUpdating(id));
     api(`/api/messages/${id}/cancel_sale`, {method: 'post'})
         .then(res => {
             getMessage(dispatch, id);
