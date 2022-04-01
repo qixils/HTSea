@@ -4,6 +4,7 @@ from http import HTTPStatus
 
 import aiohttp
 import databases
+import datetime
 import random
 import hashlib
 import time
@@ -129,7 +130,7 @@ async def get_user_auth_data(http_client: aiohttp.ClientSession,
 
 async def get_session_data(req: Request) -> typing.Optional[typing.Dict[str, typing.Any]]:
     secret = req.cookies.get("webToken")
-    status = await validate_user(secret, None)
+    status = await validate_user(secret)
     if not status:
         return None
     return dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret", {"secret": secret}))
@@ -142,24 +143,34 @@ async def get_user_data(user_id: int) -> typing.Optional[typing.Dict[str, typing
     return dict(user)
 
 
-async def validate_user(session_token: str, csrf_token: str = None):
+async def validate_user(session_token: str):
     users = await db.fetch_one("SELECT * from users where webToken = :sess_token",
                                {"sess_token": session_token})
-    # no user by that token
-    if not users:
-        return False
+    return bool(users)
 
-    # csrf is not a concern with wordle
-    if csrf_token is not None:
-        if users["csrfToken"] is not csrf_token:
-            # potential attack attempted, gen new token and log
-            # can also occur by someone going back on an old page (older than csrf token expiry)
-            new_token = gen_csrf()
-            await db.execute("UPDATE users SET csrfToken = :new_token WHERE webToken = :sess_token",
-                             {"sess_token": session_token,
-                              "new_token": new_token})
-            return False
-    return True
+
+async def validate_csrf(session_data):
+    row = dict(await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": session_data["snowflake"]}))
+    if row["csrftoken"] != session_data["csrftoken"]:
+        raise InvalidCSRFToken()
+    if datetime.datetime.utcnow() > row["csrfexpiry"]:
+        new_token = gen_csrf()
+        new_expiry = datetime.datetime.utcnow() + datetime.timedelta(hours=12)
+        await db.execute("UPDATE users SET csrfToken = :csrfToken, csrfExpiry = :csrfExpiry",
+                         {"csrfToken": new_token, "csrfExpiry": new_expiry})
+        raise ExpiredCSRFToken()
+    # -------------------------
+    # if csrf_token is not None:
+    #     if users["csrfToken"] is not csrf_token:
+    #         return InvalidCSRFToken()
+    #
+    #     if datetime.datetime.utcnow() > users["csrfexpiry"]:
+    #         new_token = gen_csrf()
+    #         new_expiry = datetime.datetime.utcnow() + datetime.timedelta(hours=12)
+    #         await db.execute("UPDATE users SET csrfToken = :csrfToken, csrfExpiry = :csrfExpiry",
+    #                          {"csrfToken": new_token, "csrfExpiry": new_expiry})
+    #         return ExpiredCSRFToken()
+
 
 async def get_user_profile_data(user_id:int) -> typing.Optional[typing.Dict[str, typing.Any]]:
     user = await db.fetch_one("SELECT * FROM users WHERE snowflake = :id", {"id": user_id})
@@ -173,3 +184,14 @@ async def get_user_profile_data(user_id:int) -> typing.Optional[typing.Dict[str,
         'diamonds': user['diamonds'],
         'htnftIDs': await db.fetch_all("SELECT messageSnowflake from htnfts WHERE authorSnowflake = :id", {'id': user['snowflake']})
     }
+
+
+class InvalidCSRFToken(Exception):
+    pass
+
+
+class ExpiredCSRFToken(Exception):
+    pass
+
+class NoUser(Exception):
+    pass
