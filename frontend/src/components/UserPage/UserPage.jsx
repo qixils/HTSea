@@ -90,7 +90,7 @@ const UserPage = () => {
             <div className={style['user-header']}>
                 <img className={style.avatar} alt="Avatar" src={user.avatar} width="96" height="96"/>
                 <span className={style.username}>{user.name}</span>
-                <span className={style.discriminator}>#{user.discriminator}</span>
+                <span className={style.discriminator}>#{user.discriminator.padStart(4, '0')}</span>
                 <span className={style.balance}>
                     <Diamonds diamonds={user.diamonds} />
                 </span>
