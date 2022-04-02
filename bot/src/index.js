@@ -63,18 +63,22 @@ const completeMint = async interaction => {
 	const msg = origInteraction.targetMessage;
 	const payload = serializeMessage(msg);
 	payload.user_id = origInteraction.user.id;
-	const res = await axios.post('http://app:8000/api/mint_htnft', JSON.stringify(payload), {
-		headers: {
-			Authorization: `Bearer ${process.env.INTERNAL_API_SECRET}`
-		}
-	});
-	if (res.data.success) {
-		await interaction.update({
-			content: `Minted! You can view it at ${process.env.FRONTEND_URL_PREFIX}/messages/${msg.id}`,
-			components: []
+	try {
+		const res = await axios.post('http://app:8000/api/mint_htnft', JSON.stringify(payload), {
+			headers: {
+				Authorization: `Bearer ${process.env.INTERNAL_API_SECRET}`
+			}
 		});
-	} else {
-		await interaction.update({content: errorToMessage(res.data), components: []});
+		if (res.data.success) {
+			await interaction.update({
+				content: `Minted! You can view it at ${process.env.FRONTEND_URL_PREFIX}/messages/${msg.id}`,
+				components: []
+			});
+		} else {
+			await interaction.update({content: errorToMessage(res.data), components: []});
+		}
+	} catch (err) {
+		await interaction.update({content: err.message, components: []});
 	}
 };
 
