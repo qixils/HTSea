@@ -40,18 +40,25 @@ client.on('ready', () => {
 
 const mintInteractions = new TimedMap();
 
-const errorToMessage = data => {
-	switch (data.error) {
-		case 'USER_NOT_REGISTERED': {
-			return 'You don\'t seem to have registered an HTSea account.';
-		}
-		case 'ALREADY_MINTED': {
-			return 'This message has already been minted.';
-		}
-		case 'NOT_ENOUGH_DIAMONDS': {
-			return `Minting the message would cost **${data.cost} diamonds**, and your current balance is only **${data.user_diamonds} diamonds**.`;
+const errorToMessage = err => {
+	if (err.response && err.response.data) {
+		const {data} = err.response;
+		switch (data.error) {
+			case 'USER_NOT_REGISTERED': {
+				return 'You don\'t seem to have registered an HTSea account.';
+			}
+			case 'ALREADY_MINTED': {
+				return 'This message has already been minted.';
+			}
+			case 'NOT_ENOUGH_DIAMONDS': {
+				return `Minting the message would cost **${data.data.cost} diamonds**, and your current balance is only **${data.data.user_diamonds} diamonds**.`;
+			}
+			default: {
+				return `Error: ${data.error}${data.comment ? '` (${err.response.data.comment})`' : ''}`;
+			}
 		}
 	}
+	return err.message;
 }
 
 const completeMint = async interaction => {
@@ -64,21 +71,17 @@ const completeMint = async interaction => {
 	const payload = serializeMessage(msg);
 	payload.user_id = origInteraction.user.id;
 	try {
-		const res = await axios.post('http://app:8000/api/mint_htnft', JSON.stringify(payload), {
+		await axios.post('http://app:8000/api/mint_htnft', JSON.stringify(payload), {
 			headers: {
 				Authorization: `Bearer ${process.env.INTERNAL_API_SECRET}`
 			}
 		});
-		if (res.data.success) {
-			await interaction.update({
-				content: `Minted! You can view it at ${process.env.FRONTEND_URL_PREFIX}/messages/${msg.id}`,
-				components: []
-			});
-		} else {
-			await interaction.update({content: errorToMessage(res.data), components: []});
-		}
+		await interaction.update({
+			content: `Minted! You can view it at ${process.env.FRONTEND_URL_PREFIX}/messages/${msg.id}`,
+			components: []
+		});
 	} catch (err) {
-		await interaction.update({content: err.message, components: []});
+		await interaction.update({content: errorToMessage(err), components: []});
 	}
 };
 
@@ -100,30 +103,25 @@ const startMint = async interaction => {
 		if (interaction.user.id !== interaction.targetMessage.author.id) {
 			content = 'You can\'t mint someone else\'s message!';
 		} else {
-			const res = await axios.post('http://app:8000/api/mint_check', JSON.stringify(payload), {
+			const {data} = await axios.post('http://app:8000/api/mint_check', JSON.stringify(payload), {
 				headers: {
 					Authorization: `Bearer ${process.env.INTERNAL_API_SECRET}`
 				}
 			});
-			const {data} = res;
-			if (data.success) {
-				content = `Mint the message for **${data.cost} diamonds**? Your current balance is **${data.user_diamonds} diamonds**.`;
-				components = [new MessageActionRow().addComponents(
-					new MessageButton()
-						.setCustomId('complete_mint')
-						.setLabel('Mint')
-						.setStyle('PRIMARY'),
-					new MessageButton()
-						.setCustomId('cancel_mint')
-						.setLabel('Cancel')
-						.setStyle('DANGER'),
-				)];
-			} else {
-				content = errorToMessage(data);
+			content = `Mint the message for **${data.cost} diamonds**? Your current balance is **${data.user_diamonds} diamonds**.`;
+			components = [new MessageActionRow().addComponents(
+				new MessageButton()
+					.setCustomId('complete_mint')
+					.setLabel('Mint')
+					.setStyle('PRIMARY'),
+				new MessageButton()
+					.setCustomId('cancel_mint')
+					.setLabel('Cancel')
+					.setStyle('DANGER'),
+			)];
 			}
-		}
 	} catch (err) {
-		content = `Error: ${err.message}`;
+		content = errorToMessage(err);
 	}
 	await interaction.reply({content, ephemeral: true, components});
 	mintInteractions.add(interaction.id, interaction, TIMEOUT);

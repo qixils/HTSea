@@ -66,10 +66,11 @@ class HttpClient:
 
 
 class ApiException(Exception):
-    def __init__(self, status_code: int, error: str = None, comment: str = None):
+    def __init__(self, status_code: int, error: str = None, comment: str = None, data: typing.Any = None):
         self.status_code = status_code
         self.error = error
         self.comment = comment
+        self.data = data
 
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")

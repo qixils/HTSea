@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.encoders import jsonable_encoder
 from urllib.parse import quote
 
 from pkg.dependencies import *
@@ -63,11 +64,14 @@ async def connect_minecraft_acct(uuid: str, secret: str):
 
 @app.exception_handler(ApiException)
 async def api_exception_handler(req: Request, exc: ApiException):
+    content = {
+        'success': False,
+        'error': exc.error,
+        'comment': exc.comment
+    }
+    if exc.data is not None:
+        content['data'] = exc.data
     return JSONResponse(
         status_code=exc.status_code,
-        content={
-            'success': False,
-            'error': exc.error,
-            'comment': exc.comment
-        }
+        content=jsonable_encoder(content)
     )
