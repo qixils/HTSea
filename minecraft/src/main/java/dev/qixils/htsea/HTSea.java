@@ -231,7 +231,8 @@ public final class HTSea extends JavaPlugin implements Listener {
 						<color:yellow>You are playing on the
 						<color:gold>HTSea Minecraft Server</color>.</color>
 						<color:aqua>Use <color:blue>/vault</color> to deposit
-						and withdrawal Diamonds.</color>"""));
+						and withdrawal Diamonds.</color>
+						"""));
 		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 			SecretResponse response = request(SecretResponse.class, "api/users/mc/secret?uuid=" + player.getUniqueId(), "GET", false, null);
 			if (response == null) {

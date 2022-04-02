@@ -5,6 +5,7 @@ import dev.qixils.htsea.responses.ProfileResponse;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
+import fr.minuskube.inv.content.SlotPos;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -12,12 +13,15 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
+import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event.Result;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.util.Consumer;
+import org.bukkit.util.Vector;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -36,6 +40,16 @@ public final class MainMenu implements IInventory {
 	private static final Material LOADING_COLOR_2 = Material.PURPLE_STAINED_GLASS_PANE;
 	private static final NumberFormat BALANCE_FORMAT = new DecimalFormat("#,###.###");
 	private static final int TRANSACTION_ITEM_ROW = 2;
+	private static final SlotPos[] LOADING_ANIM_INDICES = {
+			SlotPos.of(0, 3),
+			SlotPos.of(0, 4),
+			SlotPos.of(0, 5),
+			SlotPos.of(1, 5),
+			SlotPos.of(2, 5),
+			SlotPos.of(2, 4),
+			SlotPos.of(2, 3),
+			SlotPos.of(1, 3)
+	};
 	private final HTSea plugin;
 	private final SmartInventory inv;
 	private int transactionTally = 0;
@@ -129,7 +143,7 @@ public final class MainMenu implements IInventory {
 				player.sendMessage(Component.text("You do not have enough diamonds to complete this transaction.", NamedTextColor.RED));
 				// refund the transaction
 				final int refund = transactionTally - diamondsToDeposit;
-				Bukkit.getScheduler().runTask(plugin, () -> player.getWorld().dropItem(player.getLocation(), new ItemStack(Material.DIAMOND, refund)));
+				Bukkit.getScheduler().runTask(plugin, () -> player.getWorld().dropItem(player.getLocation(), new ItemStack(Material.DIAMOND, refund), getItemModifier(player)));
 				return;
 			}
 			Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -156,19 +170,22 @@ public final class MainMenu implements IInventory {
 				if (response.hasError()) {
 					// reimburse the player
 					if (transactionTally > 0)
-						Bukkit.getScheduler().runTask(plugin, () -> player.getWorld().dropItem(player.getLocation(), new ItemStack(Material.DIAMOND, transactionTally)));
+						Bukkit.getScheduler().runTask(plugin, () -> player.getWorld().dropItem(player.getLocation(), new ItemStack(Material.DIAMOND, transactionTally), getItemModifier(player)));
 					// show the error
 					message = Component.text("An error occurred while attempting to perform this transaction.", NamedTextColor.RED);
 					String error = " The error was " + response.status;
 					if (response.error != null)
 						error += ' ' + response.error;
 					message = message.append(Component.text(error, NamedTextColor.GRAY));
-				} else
+				} else {
 					message = Component.text("Your ", NamedTextColor.GREEN)
 							.append(transactionTally > 0 ? Component.text("deposit", NamedTextColor.GREEN) : Component.text("withdrawal", NamedTextColor.RED))
 							.append(Component.text(" of "))
 							.append(Component.text(BALANCE_FORMAT.format(Math.abs(transactionTally)) + " Diamond" + (Math.abs(transactionTally) == 1 ? "" : "s"), NamedTextColor.AQUA))
 							.append(Component.text(" was successful."));
+					if (transactionTally < 0)
+						Bukkit.getScheduler().runTask(plugin, () -> player.getWorld().dropItem(player.getLocation(), new ItemStack(Material.DIAMOND, -transactionTally), getItemModifier(player)));
+				}
 				player.sendMessage(message);
 			});
 		}));
@@ -179,6 +196,17 @@ public final class MainMenu implements IInventory {
 		contents.set(TRANSACTION_ITEM_ROW, 5, getTransactionModificationItem(player, contents, Material.PINK_STAINED_GLASS_PANE, -1));
 	}
 
+	public Consumer<Item> getItemModifier(Player player) {
+		return item -> {
+			item.setOwner(player.getUniqueId());
+			item.setThrower(player.getUniqueId());
+			item.setPickupDelay(0);
+			item.setCanMobPickup(false);
+			item.setCanPlayerPickup(true);
+			item.setVelocity(new Vector(0, 0, 0));
+		};
+	}
+
 	@Override
 	public void init(Player player, InventoryContents contents) {
 		// loading animation
@@ -187,12 +215,9 @@ public final class MainMenu implements IInventory {
 			int coloredSquares = animFrame.get() % 8;
 			Material base = animFrame.get() < 8 ? LOADING_COLOR_1 : LOADING_COLOR_2;
 			Material colored = animFrame.get() < 8 ? LOADING_COLOR_2 : LOADING_COLOR_1;
-			for (int row = 0; row < 3; row++) {
-				for (int col = 3; col < 6; col++) {
-					if (row == 1 && col == 4) continue;
-					Material mat = coloredSquares-- > 0 ? colored : base;
-					contents.set(row, col, ClickableItem.empty(getLoadingItem(mat)));
-				}
+			for (SlotPos slot : LOADING_ANIM_INDICES) {
+				Material mat = coloredSquares-- > 0 ? colored : base;
+				contents.set(slot, ClickableItem.empty(getLoadingItem(mat)));
 			}
 			animFrame.set((animFrame.get() + 1) % 17);
 		}, 0, 2);
@@ -206,7 +231,6 @@ public final class MainMenu implements IInventory {
 			Bukkit.getScheduler().runTaskLater(plugin, () -> {
 				contents.fill(ClickableItem.empty(new ItemStack(Material.AIR)));
 				// abort if profile is null or has an error
-				// TODO better handling of users with no linked account
 				if ("The requested profile could not be found.".equals(profile.error)) {
 					player.closeInventory();
 					player.sendMessage(Component.text("You do not have a linked HTSea account. Please click on the URL sent to you upon joining the server to link one.", NamedTextColor.RED));
