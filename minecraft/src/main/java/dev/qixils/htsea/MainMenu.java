@@ -100,7 +100,6 @@ public final class MainMenu implements IInventory {
 		));
 		item.setItemMeta(meta);
 		return ClickableItem.of(item, e -> {
-			e.setResult(Result.DENY);
 			int originalTally = transactionTally;
 			transactionTally = Math.max(transactionTally + amount, -1 * (int) Math.floor(diamonds));
 			transactionTally = Math.min(transactionTally, player.getInventory().all(Material.DIAMOND).values().stream().mapToInt(ItemStack::getAmount).sum());
@@ -115,7 +114,6 @@ public final class MainMenu implements IInventory {
 
 	private void updateTransactionItems(Player player, InventoryContents contents) {
 		contents.set(TRANSACTION_ITEM_ROW, 4, ClickableItem.of(getTransactionTallyItem(), e -> {
-			e.setResult(Result.DENY);
 			if (!e.isLeftClick() || e.isShiftClick()) return;
 			if (transactionTally == 0) return;
 			player.closeInventory();
@@ -193,7 +191,7 @@ public final class MainMenu implements IInventory {
 				for (int col = 3; col < 6; col++) {
 					if (row == 1 && col == 4) continue;
 					Material mat = coloredSquares-- > 0 ? colored : base;
-					contents.set(row, col, ClickableItem.of(getLoadingItem(mat), e -> e.setResult(Result.DENY)));
+					contents.set(row, col, ClickableItem.empty(getLoadingItem(mat)));
 				}
 			}
 			animFrame.set((animFrame.get() + 1) % 17);
@@ -206,7 +204,7 @@ public final class MainMenu implements IInventory {
 			// cancel loading animation
 			anim.cancel();
 			Bukkit.getScheduler().runTaskLater(plugin, () -> {
-				contents.fill(ClickableItem.of(new ItemStack(Material.AIR), e -> e.setResult(Result.DENY)));
+				contents.fill(ClickableItem.empty(new ItemStack(Material.AIR)));
 				// abort if profile is null or has an error
 				// TODO better handling of users with no linked account
 				if ("The requested profile could not be found.".equals(profile.error)) {
@@ -223,7 +221,8 @@ public final class MainMenu implements IInventory {
 									.append(Component.space())
 									.append(Component.text(Objects.requireNonNullElse(profile.error, "[Error Unknown]"), NamedTextColor.YELLOW))
 					));
-					contents.set(1, 4, ClickableItem.of(errorItem, e -> e.setResult(Result.DENY)));
+					errorItem.setItemMeta(meta);
+					contents.set(1, 4, ClickableItem.empty(errorItem));
 					return;
 				}
 				// player balance item
