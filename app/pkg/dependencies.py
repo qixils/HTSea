@@ -10,8 +10,7 @@ import hashlib
 import time
 import os
 
-from fastapi import HTTPException, Request, Response
-from fastapi.responses import JSONResponse
+from fastapi import Request, Response
 
 db = databases.Database("postgresql://{}@{}:5432/{}".format(
     os.getenv("POSTGRES_USER"),
@@ -67,9 +66,10 @@ class HttpClient:
 
 
 class ApiException(Exception):
-    def __init__(self, message: str, status_code: int):
-        self.message = message
+    def __init__(self, status_code: int, error: str = None, comment: str = None):
         self.status_code = status_code
+        self.error = error
+        self.comment = comment
 
 client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
@@ -91,15 +91,17 @@ def gen_mc_secret():
 
 def validate_internal_request(req: Request) -> typing.Optional[Response]:
     if 'Authorization' not in req.headers:
-        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail={
-            'success': False,
-            'error': 'This internal endpoint requires a secret token.'
-        })
+        raise ApiException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            error='TOKEN_REQUIRED',
+            comment='This internal endpoint requires a secret token.'
+        )
     if req.headers['Authorization'] != "Bearer " + os.getenv('INTERNAL_API_SECRET'):
-        raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail={
-            'success': False,
-            'error': 'The provided secret token is invalid'
-        })
+        raise ApiException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            error='TOKEN_INVALID',
+            comment='The provided secret token is invalid'
+        )
 
 
 def gen_discord_oauth_payload(code: str, redirect_uri: str):
@@ -116,16 +118,19 @@ async def get_user_auth_data(http_client: aiohttp.ClientSession,
                              code: str,
                              redirect_uri: str) -> typing.Dict[str, typing.Any]:
     if code is None:
-        raise ApiException("This page must be accessed through the Discord OAuth flow.",
-                           HTTPStatus.UNAUTHORIZED)
+        # TODO return an error and not just a comment
+        raise ApiException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            error=None,
+            comment="This page must be accessed through the Discord OAuth flow.")
     res = await http_client.post("https://discord.com/api/oauth2/token",
                                  data=gen_discord_oauth_payload(code, redirect_uri),
                                  headers=_headers)
-    print(res.status)
     if res.status != 200:
-        raise ApiException("Failed to retrieve OAuth data. "
-                           "Please ensure you are not trying to break our website.",
-                           HTTPStatus.FORBIDDEN)
+        raise ApiException(
+            status_code=HTTPStatus.FORBIDDEN,
+            error=None,
+            comment="Failed to retrieve OAuth data. Please ensure you are not trying to break our website.")
     res = json.loads(await res.read())
     access_token: str = res["access_token"]
     refresh_token: str = res["refresh_token"]
@@ -233,25 +238,25 @@ async def get_user_profile_data(user_id:int) -> typing.Optional[typing.Dict[str,
 async def session_user(req: Request, resp: Response, csrf: str = None):
     user = await get_session_data(req)
     if not user:
-        raise HTTPException(status_code=403, detail={
-            'success': False,
-            'error': 'USER_NOT_LOGGED_IN'
-        })
+        raise ApiException(
+            status_code=HTTPStatus.FORBIDDEN,
+            error='USER_NOT_LOGGED_IN'
+        )
 
     try:
         csrf_val = await validate_csrf(user)
     except InvalidCSRFToken:
-        raise HTTPException(status_code=403, detail={
-            'success': False,
-            'error': 'WRONG_CSRF_TOKEN',
-            'comment': 'Stop trying CSRF attacks!'
-        })
+        raise ApiException(
+            status_code=HTTPStatus.FORBIDDEN,
+            error='WRONG_CSRF_TOKEN',
+            comment='Stop trying CSRF attacks!'
+        )
     except ExpiredCSRFToken:
-        raise HTTPException(status_code=403, detail={
-            'success': False,
-            'error': 'EXPIRED_CSRF_TOKEN',
-            'comment': 'Refresh the page (or stop trying CSRF attacks!)'
-        })
+        raise ApiException(
+            status_code=HTTPStatus.FORBIDDEN,
+            error='EXPIRED_CSRF_TOKEN',
+            comment='Refresh the page (or stop trying CSRF attacks!)'
+        )
 
     return user
 

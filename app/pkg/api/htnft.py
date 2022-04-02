@@ -152,16 +152,13 @@ async def mint_htnft(req: Request,
 
 async def get_htnft(message_id: int):
     if message_id > (2**63 - 1) or message_id < 0:
-        raise HTTPException(status_code=400, detail={
-            'success': False,
-            'error': 'INVALID_ID'
-        })
+        raise ApiException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            error='INVALID_ID'
+        )
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
     if row is None:
-        raise HTTPException(status_code=404, detail={
-            'success': False,
-            'error': 'Not Found'
-        })
+        raise ApiException(status_code=HTTPStatus.NOT_FOUND)
     return row
 
 @route.get("/messages/{message_id}")

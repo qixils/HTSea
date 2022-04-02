@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from urllib.parse import quote
 
@@ -60,3 +60,14 @@ async def connect_minecraft_acct(uuid: str, secret: str):
     rres.set_cookie(key="mcuuid", value=uuid)
     rres.set_cookie(key="mcsecret", value=secret)
     return rres
+
+@app.exception_handler(ApiException)
+async def api_exception_handler(req: Request, exc: ApiException):
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={
+            'success': False,
+            'error': exc.error,
+            'comment': exc.comment
+        }
+    )
