@@ -2,7 +2,7 @@ import style from './style.module.scss';
 
 const Avatar = ({user, size}) => {
     if (!user) return `https://cdn.discordapp.com/embed/avatars/0.png`;
-    if (!user.avatar) return `https://cdn.discordapp.com/embed/avatars/${user.discriminator % 5}.png`;
+    if (!user.avatar) return `https://cdn.discordapp.com/embed/avatars/${Number(user.discriminator) % 5}.png`;
     // test if handed an avatar hash directly
     let avatarHashMatch = /^([a-z0-9]+)$/.exec(user.avatar);
     if (!avatarHashMatch) {

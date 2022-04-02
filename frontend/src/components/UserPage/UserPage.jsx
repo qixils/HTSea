@@ -94,7 +94,7 @@ const UserPage = () => {
                     <Avatar user={user} size={96} />
                 </span>
                 <span className={style.username}>{user.name}</span>
-                <span className={style.discriminator}>#{user.discriminator.toString().padStart(4, '0')}</span>
+                <span className={style.discriminator}>#{user.discriminator}</span>
                 <span className={style.balance}>
                     <Diamonds diamonds={user.diamonds} />
                 </span>

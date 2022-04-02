@@ -172,7 +172,7 @@ async def get_message(message_id: int, row=Depends(get_htnft)):
         'id': str(user['snowflake']),
         'name': user['name'],
         'nickname': user['nickname'],
-        'discriminator': user['discriminator'],
+        'discriminator': str(user['discriminator']).rjust(4, '0'),
         'avatar': user['avatar']
     } for user in await db.fetch_all("SELECT * from referenced_users WHERE nftid = :id", {'id': message_id})}
     

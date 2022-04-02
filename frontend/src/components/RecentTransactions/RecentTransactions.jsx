@@ -44,7 +44,7 @@ const RecentTransactions = () => {
                     <Avatar size={16} user={user} />
                 </span>
                 <span className={style.username}> {user.name}</span>
-                <span className={style.discriminator}>#{user.discriminator.toString().padStart(4, '0')}</span>
+                <span className={style.discriminator}>#{user.discriminator}</span>
             </span>
         </Link> : user
     );
