@@ -19,25 +19,27 @@ async def mint_check(req: Request,
     data = await req.json()
     user = await get_user_data(int(data['user_id']))
     if user is None:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'USER_NOT_REGISTERED'
-        }))
+            raise ApiException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                error='USER_NOT_REGISTERED'
+            )
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": int(data['message_id'])})
     if row is not None:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'ALREADY_MINTED'
-        }))
+        raise ApiException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            error='ALREADY_MINTED'
+        )
     
     diamonds = user['diamonds']
     if diamonds < MINT_COST:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'NOT_ENOUGH_DIAMONDS',
-            'user_diamonds': diamonds,
-            'cost': MINT_COST
-        }))
+        raise ApiException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            error='NOT_ENOUGH_DIAMONDS',
+            data={
+                'user_diamonds': diamonds,
+                'cost': MINT_COST
+            }
+        )
 
     return JSONResponse(content=jsonable_encoder({
         'success': True,
@@ -51,29 +53,32 @@ async def mint_htnft(req: Request,
                      resp: Response):
     data = await req.json()
     if data['message']['authorID'] != data['user_id']:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'CANNOT_MINT_OTHERS_MESSAGES'
-        }))
+        raise ApiException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            error='CANNOT_MINT_OTHERS_MESSAGES'
+        )
 
     async with db.transaction():
         user = await get_user_data(int(data['user_id']))
         if user is None:
-            return JSONResponse(content=jsonable_encoder({
-                'success': False,
-                'error': 'USER_NOT_REGISTERED'
-            }))
+            raise ApiException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                error='USER_NOT_REGISTERED'
+            )
         diamonds = user['diamonds']
         if diamonds < MINT_COST:
-            return JSONResponse(content=jsonable_encoder({
-                'success': False,
-                'error': 'NOT_ENOUGH_DIAMONDS',
-                'user_diamonds': diamonds,
-                'cost': MINT_COST
-            }))
+            raise ApiException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                error='NOT_ENOUGH_DIAMONDS',
+                data={
+                    'user_diamonds': diamonds,
+                    'cost': MINT_COST
+                }
+            )
         
         mint_time = datetime.datetime.now()
         
+        # TODO handle error when htnft already minted (race condition?)
         await db.execute("INSERT INTO htnfts (messageSnowflake, channelSnowflake, guildSnowflake, authorSnowflake, content, mintedAt, embeds, attachments, currentOwner) "
                         "VALUES (:message_snowflake, :channel_snowflake, :guild_snowflake, :author_snowflake, :content, :minted_at, :embeds, :attachments, :owner)", {
                             'message_snowflake': int(data['message']['id']),
@@ -231,18 +236,15 @@ async def sell_htnft(req: Request, resp: Response, message_id: int, user=Depends
     current_owner = row['currentowner']
 
     if current_owner != user['snowflake']:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'NOT_OWNER',
-            'comment': 'You do not own this message'
-        }), status_code=403)
+        raise ApiException(
+            status_code=HTTPStatus.FORBIDDEN,
+            error='NOT_OWNER',
+            comment='You do not own this message'
+        )
 
     data = await req.json()
     if 'price' not in data or not isinstance(data['price'], int) or data['price'] < 0:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'Bad Request'
-        }), status_code=400)
+        raise ApiException(status_code=HTTPStatus.BAD_REQUEST)
 
     await db.execute("UPDATE htnfts SET currentPrice = :price "
                     "WHERE messageSnowflake = :id",
@@ -258,11 +260,11 @@ async def sell_htnft(req: Request, resp: Response, message_id: int, user=Depends
 async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, user = Depends(session_user), row = Depends(get_htnft)):
     current_owner = row['currentowner']
     if current_owner != user['snowflake']:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'NOT_OWNER',
-            'comment': 'You do not own this message'
-        }), status_code=403)
+        raise ApiException(
+            status_code=HTTPStatus.FORBIDDEN,
+            error='NOT_OWNER',
+            comment='You do not own this message'
+        )
 
     await db.execute("UPDATE htnfts SET currentPrice = NULL "
                     "WHERE messageSnowflake = :id", {'id': message_id})
@@ -274,23 +276,23 @@ async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, user 
 async def buy_htnft(req: Request, resp: Response, message_id: int, new_owner = Depends(session_user), row = Depends(get_htnft)):
     async with db.transaction():
         if row['currentprice'] is None:
-            return JSONResponse(content=jsonable_encoder({
-                'success': False,
-                'error': 'NOT_FOR_SALE'
-            }), status_code=400)
-    
+            raise ApiException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                error='NOT_FOR_SALE'
+            )
+
         if new_owner['diamonds'] < row['currentprice']:
-            return JSONResponse(content=jsonable_encoder({
-                'success': False,
-                'error': 'NOT_AFFORDABLE'
-            }), status_code=400)
+            raise ApiException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                error='NOT_AFFORDABLE'
+            )
 
         current_owner = row['currentowner']
         if current_owner == new_owner['snowflake']:
-            return JSONResponse(content=jsonable_encoder({
-                'success': False,
-                'error': 'CANNOT_SELL_TO_SELF'
-            }), status_code=400)
+            raise ApiException(
+                status_code=HTTPStatus.BAD_REQUEST,
+                error='CANNOT_SELL_TO_SELF'
+            )
         
         await db.execute("INSERT INTO transactions (id, message, seller, buyer, cost, timestamp) "
                 "VALUES (:tid, :nft_id, :seller, :buyer, :cost, :timestamp)", {
