@@ -1,12 +1,13 @@
 class APIError extends Error {
-    constructor (message, type) {
+    constructor (message, type, status) {
         super(message);
         this.type = type;
         this.name = 'APIError';
+        this.status = status;
     }
 
     toString () {
-        return `${this.name}: ${this.type}` + (this.message ? ` (${this.message})` : '');
+        return `${this.name} (status ${this.status}): ${this.type}` + (this.message ? ` (${this.message})` : '');
     }
 }
 
@@ -22,12 +23,12 @@ const api = (route, opts = {}) => {
         // include credentials by default
         Object.assign({credentials: 'include'}, otherOpts)
     )
-    .then(res => res.json())
-    .then(res => {
-        if (res.success === false || res.error) {
-            throw new APIError(res.comment || '', res.error);
+    .then(async res => {
+        let json = await res.json();
+        if (!res.ok) {
+            throw new APIError(json.comment || res.statusText, json.error, res.status);
         }
-        return res;
+        return json;
     });
 };
 
