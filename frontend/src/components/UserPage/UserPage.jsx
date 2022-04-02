@@ -4,6 +4,7 @@ import {useCallback, useState} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
 import {useParams, Link} from 'react-router-dom';
 
+import Avatar from '../Avatar/Avatar';
 import Loader from '../Loader/Loader';
 import Diamonds from '../Diamonds/Diamonds';
 import MessageList from '../MessageList/MessageList';
@@ -88,7 +89,9 @@ const UserPage = () => {
     return (
         <div className={style['user-page']}>
             <div className={style['user-header']}>
-                <img className={style.avatar} alt="Avatar" src={user.avatar} width="96" height="96"/>
+                <span className={style.avatar}>
+                    <Avatar user={user} size={96} />
+                </span>
                 <span className={style.username}>{user.name}</span>
                 <span className={style.discriminator}>#{user.discriminator.toString().padStart(4, '0')}</span>
                 <span className={style.balance}>

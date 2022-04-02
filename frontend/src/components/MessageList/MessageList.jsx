@@ -111,8 +111,6 @@ const MessageList = props => {
 					<Avatar
 						user={messageData.users[message.authorID]}
 						size={40}
-						userID={message.authorID}
-						messageData={messageData}
 					/>
 				</div>
 				<div className={style['message-right']}>

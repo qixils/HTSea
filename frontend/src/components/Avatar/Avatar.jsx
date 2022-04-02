@@ -1,45 +1,30 @@
 import style from './style.module.scss';
 
-import {Component} from 'react';
+const Avatar = ({user, size}) => {
+    if (!user) return `https://cdn.discordapp.com/embed/avatars/0.png`;
+    if (!user.avatar) return `https://cdn.discordapp.com/embed/avatars/${user.discriminator % 5}.png`;
+    // test if handed an avatar hash directly
+    let avatarHashMatch = /^([a-z0-9]+)$/.exec(user.avatar);
+    if (!avatarHashMatch) {
+        // extract avatar hash from CDN URL
+        avatarHashMatch = /^https?:\/\/cdn\.discordapp\.com\/avatars\/\d+\/([a-z0-9]+)\.[a-z]+$/.exec(user.avatar);
+    }
+    if (!avatarHashMatch) {
+        return user.avatar;
+    }
+    const avatarHash = avatarHashMatch[1];
+    const avatarURL = `https://cdn.discordapp.com/avatars/${user.id || user.snowflake}/${avatarHash}.webp?size=${size}`;
 
-class Avatar extends Component {
-	constructor (props) {
-		super(props);
-
-		this.state = {
-			handledError: false
-		};
-
-		this.getUserID = this.getUserID.bind(this);
-		this.getAvatarURL = this.getAvatarURL.bind(this);
-	}
-
-	getUserID () {
-		return this.props.userID || this.props.user.id;
-	}
-
-	getAvatarURL (size) {
-		if (!this.props.user) return `https://cdn.discordapp.com/embed/avatars/0.png`;
-		if (!this.props.user.avatar) return `https://cdn.discordapp.com/embed/avatars/${this.props.user.discriminator % 5}.png`;
-		return `https://cdn.discordapp.com/avatars/${this.props.user.id}/${this.props.user.avatar}.webp?size=${size}`;
-	}
-
-	render () {
-		const {props} = this;
-
-		const avatarURL = this.getAvatarURL(props.size);
-
-		return (
-			<img
-				className={style['avatar']}
-				src={avatarURL}
-				width={props.size}
-				height={props.size}
-				style={{width: props.size, height: props.size}}
-				alt="Avatar"
-			/>
-		);
-	}
+    return (
+        <img
+            className={style['avatar']}
+            src={avatarURL}
+            width={size}
+            height={size}
+            style={({width: size, height: size})}
+            alt="Avatar"
+        />
+    );
 }
 
 export default Avatar;
