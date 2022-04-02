@@ -143,7 +143,8 @@ async def add_diamonds(req: Request):
         # TODO use fixed error IDs (an int enum) so this is easier for the plugin to parse?
         return JSONResponse({'error': "Attempted to withdrawal more diamonds than available in user's account."},
                             HTTPStatus.BAD_REQUEST)
-    await db.execute("UPDATE users SET diamonds=:diamonds WHERE minecraft=:uuid", profile)
+    await db.execute("UPDATE users SET diamonds=:diamonds WHERE minecraft=:uuid",
+                     {'diamonds': profile['diamonds'], 'uuid': uuid})
     return profile
 
 
