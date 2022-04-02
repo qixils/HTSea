@@ -134,7 +134,7 @@ async def add_diamonds(req: Request):
                             HTTPStatus.BAD_REQUEST)
     uuid = payload['uuid']
     diamonds = payload['diamonds']
-    profile = await db.fetch_one("SELECT * FROM users WHERE minecraft=:uuid", {'uuid': uuid})
+    profile = dict(await db.fetch_one("SELECT * FROM users WHERE minecraft=:uuid", {'uuid': uuid}))
     if not profile:
         return JSONResponse({'error': 'The requested profile could not be found.'},
                             HTTPStatus.NOT_FOUND)
@@ -144,24 +144,6 @@ async def add_diamonds(req: Request):
         return JSONResponse({'error': "Attempted to withdrawal more diamonds than available in user's account."},
                             HTTPStatus.BAD_REQUEST)
     await db.execute("UPDATE users SET diamonds=:diamonds WHERE minecraft=:uuid", profile)
-    return profile
-
-
-@route.post("/mc/{user_id}/add_diamonds/{diamonds}")
-async def add_diamonds(req: Request, user_id: int, diamonds: int):
-    if validate_resp := validate_internal_request(req):
-        return validate_resp
-    profile = dict(await db.fetch_one("SELECT * FROM users WHERE snowflake=:id", {'id': user_id}))
-    if not profile:
-        return JSONResponse({'error': 'The requested profile could not be found.'},
-                            HTTPStatus.NOT_FOUND)
-    profile['diamonds'] += diamonds
-    if profile['diamonds'] < 0:
-        # TODO use fixed error IDs (an int enum) so this is easier for the plugin to parse? (GH#4)
-        return JSONResponse({'error': "Attempted to withdrawal more diamonds than available in user's account."},
-                            HTTPStatus.BAD_REQUEST)
-    await db.execute("UPDATE users SET diamonds=:diamonds WHERE snowflake=:id",
-                     {'diamonds': profile['diamonds'], 'id': user_id})
     return profile
 
 
