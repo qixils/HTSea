@@ -10,7 +10,7 @@ import hashlib
 import time
 import os
 
-from fastapi import Request, Response
+from fastapi import HTTPException, Request, Response
 from fastapi.responses import JSONResponse
 
 db = databases.Database("postgresql://{}@{}:5432/{}".format(
@@ -226,6 +226,31 @@ async def get_user_profile_data(user_id:int) -> typing.Optional[typing.Dict[str,
         return None
     return user_to_api_response(user)
 
+
+async def session_user(req: Request, resp: Response, csrf: str = None):
+    user = await get_session_data(req)
+    if not user:
+        raise HTTPException(status_code=403, detail={
+            'success': False,
+            'error': 'USER_NOT_LOGGED_IN'
+        })
+
+    try:
+        csrf_val = await validate_csrf(user)
+    except InvalidCSRFToken:
+        raise HTTPException(status_code=403, detail={
+            'success': False,
+            'error': 'WRONG_CSRF_TOKEN',
+            'comment': 'Stop trying CSRF attacks!'
+        })
+    except ExpiredCSRFToken:
+        raise HTTPException(status_code=403, detail={
+            'success': False,
+            'error': 'EXPIRED_CSRF_TOKEN',
+            'comment': 'Refresh the page (or stop trying CSRF attacks!)'
+        })
+
+    return user
 
 class InvalidCSRFToken(Exception):
     pass

@@ -157,7 +157,7 @@ async def mint_htnft(req: Request,
 
 
 @route.get("/messages/{message_id}")
-async def get_message(req: Request, resp: Response, message_id: int):
+async def get_message(req: Request, resp: Response, message_id: int, user = Depends(session_user)):
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
     if row is None:
         return JSONResponse(content=jsonable_encoder({
@@ -228,36 +228,15 @@ async def get_message(req: Request, resp: Response, message_id: int):
 
 
 @route.post("/messages/{message_id}/sell")
-async def sell_htnft(req: Request, resp: Response, message_id: int, csrf: str = None):
+async def sell_htnft(req: Request, resp: Response, message_id: int, user=Depends(session_user)):
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
     if row is None:
         return JSONResponse(content=jsonable_encoder({
             'success': False,
             'error': 'Not Found'
         }), status_code=404)
-    
-    current_owner = row['currentowner']
-    user = await get_session_data(req)
-    if not user:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'USER_NOT_LOGGED_IN'
-        }), status_code=403)
 
-    try:
-        csrf_val = await validate_csrf(user)
-    except InvalidCSRFToken:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'WRONG_CSRF_TOKEN',
-            'comment': 'Stop trying CSRF attacks!'
-        }), status_code=403)
-    except ExpiredCSRFToken:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'EXPIRED_CSRF_TOKEN',
-            'comment': 'Refresh the page (or stop trying CSRF attacks!)'
-        }), status_code=403)
+    current_owner = row['currentowner']
 
     if current_owner != user['snowflake']:
         return JSONResponse(content=jsonable_encoder({
@@ -272,7 +251,7 @@ async def sell_htnft(req: Request, resp: Response, message_id: int, csrf: str = 
             'success': False,
             'error': 'Bad Request'
         }), status_code=400)
-    
+
     await db.execute("UPDATE htnfts SET currentPrice = :price "
                     "WHERE messageSnowflake = :id",
                     {
@@ -284,37 +263,15 @@ async def sell_htnft(req: Request, resp: Response, message_id: int, csrf: str = 
 
 
 @route.post("/messages/{message_id}/cancel_sale")
-async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, csrf: str = None):
+async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, user = Depends(session_user)):
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
     if row is None:
         return JSONResponse(content=jsonable_encoder({
             'success': False,
             'error': 'Not Found'
         }), status_code=404)
-    
+
     current_owner = row['currentowner']
-    user = await get_session_data(req)
-    if not user:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'USER_NOT_LOGGED_IN'
-        }), status_code=403)
-
-    try:
-        csrf_val = await validate_csrf(user)
-    except InvalidCSRFToken:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'WRONG_CSRF_TOKEN',
-            'comment': 'Stop trying CSRF attacks!'
-        }), status_code=403)
-    except ExpiredCSRFToken:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'EXPIRED_CSRF_TOKEN',
-            'comment': 'Refresh the page (or stop trying CSRF attacks!)'
-        }), status_code=403)
-
     if current_owner != user['snowflake']:
         return JSONResponse(content=jsonable_encoder({
             'success': False,
@@ -329,28 +286,7 @@ async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, csrf:
 
 
 @route.post("/messages/{message_id}/buy")
-async def buy_htnft(req: Request, resp: Response, message_id: int, csrf: str = None):
-    new_owner = await get_session_data(req)
-    if not new_owner:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'USER_NOT_LOGGED_IN'
-        }), status_code=403)
-    try:
-        csrf_val = await validate_csrf(new_owner)
-    except InvalidCSRFToken:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'WRONG_CSRF_TOKEN',
-            'comment': 'Stop trying CSRF attacks!'
-        }), status_code=403)
-    except ExpiredCSRFToken:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'EXPIRED_CSRF_TOKEN',
-            'comment': 'Refresh the page (or stop trying CSRF attacks!)'
-        }), status_code=403)
-
+async def buy_htnft(req: Request, resp: Response, message_id: int, new_owner = Depends(session_user)):
     async with db.transaction():
         row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
         if row is None:
