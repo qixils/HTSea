@@ -37,7 +37,7 @@ class Navbar extends Component {
                                 <Avatar user={user} size={32} />
                                 <span className={style.username}>
                                     {user.name}
-                                    <span className={style.discriminator}>#{user.discriminator.toString().padStart(4, '0')}</span>
+                                    <span className={style.discriminator}>#{user.discriminator}</span>
                                 </span>
                                 <div className={style.diamonds}>
                                     <img className={style['diamond-icon']} src={diamond} width="24" height="26" alt="Diamonds" />

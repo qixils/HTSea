@@ -215,7 +215,7 @@ def user_to_api_response(user: typing.Dict) -> typing.Dict:
     return {
         'id': str(user['snowflake']),
         'name': user['name'],
-        'discriminator': user['discriminator'],
+        'discriminator': str(user['discriminator']).rjust(4, '0'),
         'avatar': user['avatar'],
         'diamonds': user['diamonds']
     }
