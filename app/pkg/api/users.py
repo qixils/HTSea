@@ -88,10 +88,8 @@ async def register_mc(user_req: Request,
     return response
 
 
-@route.get("/mc/secret")
+@route.get("/mc/secret", dependencies=[Depends(validate_internal_request)])
 async def get_secret(req: Request):
-    if validate_resp := validate_internal_request(req):
-        return validate_resp
     if 'uuid' not in req.query_params:
         return JSONResponse({'error': 'The uuid query parameter is required.'},
                             HTTPStatus.BAD_REQUEST)
@@ -106,10 +104,8 @@ async def get_secret(req: Request):
     return {'secret': queue['secret']}
 
 
-@route.get("/mc/profile")
+@route.get("/mc/profile", dependencies=[Depends(validate_internal_request)])
 async def get_profile_by_uuid(req: Request):
-    if validate_resp := validate_internal_request(req):
-        return validate_resp
     if 'uuid' not in req.query_params:
         return JSONResponse({'error': 'The uuid query parameter is required.'},
                             HTTPStatus.BAD_REQUEST)
@@ -121,10 +117,8 @@ async def get_profile_by_uuid(req: Request):
     return profile
 
 
-@route.post("/mc/add_diamonds")
+@route.post("/mc/add_diamonds", dependencies=[Depends(validate_internal_request)])
 async def add_diamonds(req: Request):
-    if validate_resp := validate_internal_request(req):
-        return validate_resp
     payload = await req.json()
     if 'uuid' not in payload:
         return JSONResponse({'error': 'The uuid parameter is required.'},

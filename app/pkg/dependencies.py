@@ -91,12 +91,15 @@ def gen_mc_secret():
 
 def validate_internal_request(req: Request) -> typing.Optional[Response]:
     if 'Authorization' not in req.headers:
-        return JSONResponse({'error': 'This internal endpoint requires a secret token.'},
-                            HTTPStatus.UNAUTHORIZED)
+        raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail={
+            'success': False,
+            'error': 'This internal endpoint requires a secret token.'
+        })
     if req.headers['Authorization'] != "Bearer " + os.getenv('INTERNAL_API_SECRET'):
-        return JSONResponse({'error': 'The provided secret token is invalid.'},
-                            HTTPStatus.FORBIDDEN)
-    return None
+        raise HTTPException(status_code=HTTPStatus.FORBIDDEN, detail={
+            'success': False,
+            'error': 'The provided secret token is invalid'
+        })
 
 
 def gen_discord_oauth_payload(code: str, redirect_uri: str):
