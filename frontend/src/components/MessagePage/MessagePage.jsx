@@ -2,7 +2,7 @@ import style from './style.module.scss';
 
 import {useCallback, useState} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
-import {useParams, Link} from 'react-router-dom';  
+import {useParams, Link} from 'react-router-dom';
 import classNames from 'classnames';
 
 import Diamonds from '../Diamonds/Diamonds';
@@ -10,6 +10,7 @@ import MessageList from '../MessageList/MessageList';
 import {BlueButton, WhiteButton} from '../Sea/SeaButton';
 import Modal from '../Modal/Modal';
 import Loader from '../Loader/Loader';
+import ErrorPage from '../ErrorPage/ErrorPage';
 
 import {getMessage, buyMessage, sellMessage, cancelMessageSale, MESSAGE_IDLE, MESSAGE_UPDATING, MESSAGE_SUCCESS} from '../../redux/message';
 import {getSession, SESSION_IDLE, SESSION_PENDING, SESSION_SUCCESS} from '../../redux/session';
@@ -62,7 +63,7 @@ const MessagePage = () => {
     }
 
     if (messageState.status !== MESSAGE_SUCCESS || !messageState.data.success || sessionState.status !== SESSION_SUCCESS) {
-        return <div>Error</div>
+        return <ErrorPage error={messageState.error || sessionState.error} />
     }
 
     const messageData = messageState.data;
