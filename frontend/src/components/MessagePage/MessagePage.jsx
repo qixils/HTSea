@@ -105,8 +105,8 @@ const MessagePage = () => {
             </Modal>
             <Modal isOpen={sellModalOpen} onClose={() => setSellModalOpen(false)}>
                 <div className={style['modal-contents']}>
-                    <div className={style['modal-row']}>Sale price: <input type="number" min="0" value={salePrice} onInput={event => {
-                        const numVal = parseInt(event.target.value);
+                    <div className={style['modal-row']}>Sale price: <input type="number" min="0" step="0.001" value={salePrice.toFixed(3)} onChange={event => {
+                        const numVal = parseFloat(event.target.value);
                         if (Number.isFinite(numVal)) {
                             setSalePrice(numVal);
                         }
