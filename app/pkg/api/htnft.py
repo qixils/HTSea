@@ -155,15 +155,22 @@ async def mint_htnft(req: Request,
         'cost': MINT_COST,
     }))
 
-
-@route.get("/messages/{message_id}")
-async def get_message(req: Request, resp: Response, message_id: int, user = Depends(session_user)):
+async def get_htnft(message_id: int):
+    if message_id > (2**63 - 1) or message_id < 0:
+        raise HTTPException(status_code=400, detail={
+            'success': False,
+            'error': 'INVALID_ID'
+        })
     row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
     if row is None:
-        return JSONResponse(content=jsonable_encoder({
+        raise HTTPException(status_code=404, detail={
             'success': False,
             'error': 'Not Found'
-        }), status_code=404)
+        })
+    return row
+
+@route.get("/messages/{message_id}")
+async def get_message(req: Request, resp: Response, message_id: int, row = Depends(get_htnft)):
     
     users = {str(user['snowflake']): {
         'id': str(user['snowflake']),
@@ -228,14 +235,7 @@ async def get_message(req: Request, resp: Response, message_id: int, user = Depe
 
 
 @route.post("/messages/{message_id}/sell")
-async def sell_htnft(req: Request, resp: Response, message_id: int, user=Depends(session_user)):
-    row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
-    if row is None:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'Not Found'
-        }), status_code=404)
-
+async def sell_htnft(req: Request, resp: Response, message_id: int, user=Depends(session_user), row = Depends(get_htnft)):
     current_owner = row['currentowner']
 
     if current_owner != user['snowflake']:
@@ -263,14 +263,7 @@ async def sell_htnft(req: Request, resp: Response, message_id: int, user=Depends
 
 
 @route.post("/messages/{message_id}/cancel_sale")
-async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, user = Depends(session_user)):
-    row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
-    if row is None:
-        return JSONResponse(content=jsonable_encoder({
-            'success': False,
-            'error': 'Not Found'
-        }), status_code=404)
-
+async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, user = Depends(session_user), row = Depends(get_htnft)):
     current_owner = row['currentowner']
     if current_owner != user['snowflake']:
         return JSONResponse(content=jsonable_encoder({
@@ -286,15 +279,8 @@ async def cancel_htnft_sale(req: Request, resp: Response, message_id: int, user 
 
 
 @route.post("/messages/{message_id}/buy")
-async def buy_htnft(req: Request, resp: Response, message_id: int, new_owner = Depends(session_user)):
+async def buy_htnft(req: Request, resp: Response, message_id: int, new_owner = Depends(session_user), row = Depends(get_htnft)):
     async with db.transaction():
-        row = await db.fetch_one("SELECT * FROM htnfts WHERE messageSnowflake = :id", {"id": message_id})
-        if row is None:
-            return JSONResponse(content=jsonable_encoder({
-                'success': False,
-                'error': 'Not Found'
-            }), status_code=404)
-        
         if row['currentprice'] is None:
             return JSONResponse(content=jsonable_encoder({
                 'success': False,
