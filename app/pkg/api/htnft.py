@@ -13,12 +13,9 @@ route = APIRouter(prefix="/api")
 MINT_COST = 1
 
 
-@route.post("/mint_check")
+@route.post("/mint_check", dependencies=[Depends(validate_internal_request)])
 async def mint_check(req: Request,
                      resp: Response):
-    # TODO check if NFT already minted
-    if validate_resp := validate_internal_request(req):
-        return validate_resp
     data = await req.json()
     user = await get_user_data(int(data['user_id']))
     if user is None:
@@ -49,11 +46,9 @@ async def mint_check(req: Request,
     }))
 
 
-@route.post("/mint_htnft")
+@route.post("/mint_htnft", dependencies=[Depends(validate_internal_request)])
 async def mint_htnft(req: Request,
                      resp: Response):
-    if validate_resp := validate_internal_request(req):
-        return validate_resp
     data = await req.json()
     if data['message']['authorID'] != data['user_id']:
         return JSONResponse(content=jsonable_encoder({
