@@ -21,10 +21,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "./env-exec.js react-scripts start",
+    "build": "./env-exec.js react-scripts build",
+    "test": "./env-exec.js react-scripts test",
+    "eject": "./env-exec.js react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -43,5 +43,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.0",
+    "dotenv-expand": "^8.0.3"
   }
 }
