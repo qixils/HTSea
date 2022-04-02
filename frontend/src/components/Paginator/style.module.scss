@@ -1,0 +1,35 @@
+.paginator {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+}
+
+.paginator-top {
+    display: flex;
+    align-items: center;
+}
+
+.page-selector {
+    margin-left: auto;
+    display: inline-flex;
+    gap: 0.5em;
+}
+
+.page-button {
+    width: 2em;
+    height: 2em;
+    border-radius: 50%;
+    background-color: var(--blue-opensea);
+    color: white;
+    cursor: pointer;
+    border: none;
+
+    &:disabled {
+        background-color: var(--wordle-grey-dark);
+        cursor: not-allowed;
+    }
+}
+
+.items {
+    overflow: auto;
+}
