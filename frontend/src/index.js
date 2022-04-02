@@ -21,24 +21,24 @@ import rootReducer from './redux/reducer';
 const store = createStore(rootReducer(), applyMiddleware(thunkMiddleware));
 
 ReactDOM.render(
-  <React.StrictMode>
-    <Provider store={store}>
-      <BrowserRouter>
-        <Navbar />
-        <div className={style.main}>
-          <ErrorBanner />
-          <Routes>
-            <Route path="/" element={<App />} /> 
-            <Route path="wordle" element={<Wordle />} /> 
-            <Route path="activity" element={<RecentTransactions />} />
-            <Route path="messages/:id" element={<MessagePage />} />
-            <Route path="user/:id" element={<UserPage />} />
-          </Routes>
-        </div>
-      </BrowserRouter>
-    </Provider>
-  </React.StrictMode>,
-  document.getElementById('root')
+    <React.StrictMode>
+        <Provider store={store}>
+            <BrowserRouter>
+                <Navbar />
+                <div className={style.main}>
+                    <ErrorBanner />
+                    <Routes>
+                        <Route path="/" element={<App />} />
+                        <Route path="wordle" element={<Wordle />} />
+                        <Route path="activity" element={<RecentTransactions />} />
+                        <Route path="messages/:id" element={<MessagePage />} />
+                        <Route path="user/:id" element={<UserPage />} />
+                    </Routes>
+                </div>
+            </BrowserRouter>
+        </Provider>
+    </React.StrictMode>,
+    document.getElementById('root')
 );
 
 reportWebVitals();
