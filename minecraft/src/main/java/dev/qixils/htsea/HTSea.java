@@ -8,6 +8,7 @@ import com.google.gson.GsonBuilder;
 import dev.qixils.htsea.responses.ProfileResponse;
 import dev.qixils.htsea.responses.Response;
 import dev.qixils.htsea.responses.SecretResponse;
+import fr.minuskube.inv.InventoryManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
@@ -36,6 +37,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -49,12 +51,17 @@ public final class HTSea extends JavaPlugin implements Listener {
 			.append(Component.text("We seem to be experiencing some issues right now. " +
 					"Some services may not function as expected. " +
 					"We apologize for the inconvenience."));
-	private static final Gson GSON = new GsonBuilder().serializeNulls().create();
+	public static final Gson GSON = new GsonBuilder().serializeNulls().create();
 	private final Set<UUID> playersInformed = new HashSet<>();
 	private final MiniMessage miniMessage = MiniMessage.miniMessage();
 	private @Nullable String apiSecret;
 	private @Nullable String apiHost;
 	private @Nullable PaperCommandManager<CommandSender> commandManager;
+	private @Nullable InventoryManager inventoryManager;
+
+	public @NotNull InventoryManager getInventoryManager() {
+		return Objects.requireNonNull(inventoryManager, "Tried to access inventory manager before the plugin was initialized");
+	}
 
 	@Override
 	public void onLoad() {
@@ -64,6 +71,9 @@ public final class HTSea extends JavaPlugin implements Listener {
 	@SuppressWarnings("HttpUrlsUsage")
 	@Override
 	public void onEnable() {
+		// init smart invs inventory manager
+		inventoryManager = new InventoryManager(this);
+		inventoryManager.init();
 		// register listener
 		Bukkit.getPluginManager().registerEvents(this, this);
 		// init command framework
@@ -169,13 +179,14 @@ public final class HTSea extends JavaPlugin implements Listener {
 				return null;
 			}
 			return response;
-		} catch (IOException e) {
+		} catch (Exception e) {
 			getSLF4JLogger().error("Failed to open connection to API", e);
 			if (allowErrors) {
 				try {
 					R response = responseClass.getDeclaredConstructor().newInstance();
 					response.error = e.getMessage();
 					response.status = HttpURLConnection.HTTP_INTERNAL_ERROR;
+					return response;
 				} catch (Exception ignored) {
 				}
 			}
@@ -216,8 +227,12 @@ public final class HTSea extends JavaPlugin implements Listener {
 	public void onJoin(PlayerJoinEvent event) {
 		Player player = event.getPlayer();
 		player.sendPlayerListHeader(miniMessage.deserialize(
-				"<color:yellow>You are playing on the <color:gold>HTSea Minecraft Server</color>.</color>\n" +
-				"<color:aqua>Use <color:blue>/vault</color> to deposit and withdrawal Diamonds.</color>"));
+				"""
+						<color:yellow>You are playing on the
+						<color:gold>HTSea Minecraft Server</color>.</color>
+						<color:aqua>Use <color:blue>/vault</color> to deposit
+						and withdrawal Diamonds.</color>
+						"""));
 		Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
 			SecretResponse response = request(SecretResponse.class, "api/users/mc/secret?uuid=" + player.getUniqueId(), "GET", false, null);
 			if (response == null) {
