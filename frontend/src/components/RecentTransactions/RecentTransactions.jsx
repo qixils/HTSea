@@ -3,8 +3,10 @@ import style from './style.module.scss';
 import {useState} from 'react';
 import {Link} from 'react-router-dom';
 
-import api from '../../util/api';
+import Avatar from '../Avatar/Avatar';
 import {BlueButton} from '../Sea/SeaButton';
+
+import api from '../../util/api';
 
 const RecentTransactions = () => {
     const [transactionBatches, setTransactionBatches] = useState(null);
@@ -35,12 +37,12 @@ const RecentTransactions = () => {
         }
     }
 
-    console.log(transactions, users);
-
     const inlineUser = user => ( user ?
         <Link to={`/user/${user.id}`}>
             <span className={style.user}>
-                <img className={style.avatar} width="16" height="16" src={user.avatar} alt="Avatar"/>
+                <span className={style.avatar}>
+                    <Avatar size={16} user={user} />
+                </span>
                 <span className={style.username}> {user.name}</span>
                 <span className={style.discriminator}>#{user.discriminator.toString().padStart(4, '0')}</span>
             </span>

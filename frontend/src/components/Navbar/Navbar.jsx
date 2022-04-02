@@ -7,6 +7,8 @@ import {connect} from 'react-redux';
 import {Link} from 'react-router-dom';
 import classNames from 'classnames';
 
+import Avatar from '../Avatar/Avatar';
+
 import {getSession, SESSION_IDLE, SESSION_SUCCESS} from '../../redux/session';
 
 import loginURL from '../../util/login-url';
@@ -32,9 +34,11 @@ class Navbar extends Component {
                         <div className={style.user}>
                         <Link to={`/user/${user.snowflake}`}>
                             <div className={style['user-inner']}>
-                                <img className={style.avatar} alt="" src={user.avatar} width="32" height="32" />
-                                <span className={style.username}>{user.name}</span>
-                                <span className={style.discriminator}>#{user.discriminator.toString().padStart(4, '0')}</span>
+                                <Avatar user={user} size={32} />
+                                <span className={style.username}>
+                                    {user.name}
+                                    <span className={style.discriminator}>#{user.discriminator.toString().padStart(4, '0')}</span>
+                                </span>
                                 <div className={style.diamonds}>
                                     <img className={style['diamond-icon']} src={diamond} width="24" height="26" alt="Diamonds" />
                                     {this.props.diamonds}
