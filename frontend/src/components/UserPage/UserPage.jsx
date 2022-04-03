@@ -1,47 +1,18 @@
 import style from './style.module.scss';
 
-import {useCallback, useState} from 'react';
+import {useCallback} from 'react';
 import {useSelector, useDispatch} from 'react-redux';
-import {useParams, Link} from 'react-router-dom';
+import {useParams} from 'react-router-dom';
 
 import Avatar from '../Avatar/Avatar';
 import Loader from '../Loader/Loader';
 import Diamonds from '../Diamonds/Diamonds';
-import MessageList from '../MessageList/MessageList';
 import ErrorPage from '../ErrorPage/ErrorPage';
 import Paginator from '../Paginator/Paginator';
 import {TransactionFeed} from '../RecentTransactions/RecentTransactions';
 
 import {getUser, USER_IDLE, USER_UPDATING, USER_SUCCESS} from '../../redux/user';
-import api from '../../util/api';
-
-const NFTPreview = ({id}) => {
-    const [message, setMessage] = useState(null);
-    const [loadState, setLoadState] = useState('idle');
-
-    if (message === null && loadState === 'idle') {
-        setLoadState('loading');
-        api(`/api/messages/${id}`)
-        .then(res => {
-            setMessage(res);
-            setLoadState('loaded');
-        })
-        .catch(err => {
-            setMessage(null);
-            setLoadState('error');
-        });
-    }
-
-    return (
-        <div className={style['nft-preview']}>
-            <Link to={`/messages/${id}`}>
-            {message === null ?
-                <Loader /> :
-                <MessageList messageData={message} />}
-            </Link>
-        </div>
-    );
-};
+import NFTPreview from '../NFTPreview/NFTPreview';
 
 const UserPage = () => {
     const {id} = useParams();

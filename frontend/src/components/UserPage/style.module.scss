@@ -45,26 +45,6 @@
 	border: 1px solid var(--border-light);
 }
 
-.nft-preview {
-    cursor: pointer;
-    box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.00);
-    display: flex;
-
-    &:hover {
-        box-shadow: 0px 10px 24px 0px rgba(0, 0, 0, 0.5);
-    }
-
-    &:last-child {
-        margin-bottom: 0;
-    }
-
-    & > * {
-        width: 100%;
-    }
-
-    transition: box-shadow 0.25s ease;
-}
-
 .paginator {
     display: inline-flex;
     vertical-align: middle;
