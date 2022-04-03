@@ -14,6 +14,7 @@ import ErrorPage from '../ErrorPage/ErrorPage';
 
 import {getMessage, buyMessage, sellMessage, cancelMessageSale, MESSAGE_IDLE, MESSAGE_UPDATING, MESSAGE_SUCCESS} from '../../redux/message';
 import {getSession, SESSION_IDLE, SESSION_PENDING, SESSION_SUCCESS} from '../../redux/session';
+import { TransactionFeed } from '../RecentTransactions/RecentTransactions';
 
 const ADJECTIVES = [
     'Magnificent',
@@ -133,7 +134,8 @@ const MessagePage = () => {
             null
             }
             
-            {/* transaction table here */}
+            <h1>Transaction History</h1>
+            <TransactionFeed endpoint={`/api/recent_transactions/message/${message.messageID}`} />
         </div>
     );
 };

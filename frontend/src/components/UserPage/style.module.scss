@@ -1,6 +1,6 @@
 .user-page {
     padding: 1em;
-    margin: 0 4rem;
+    margin: 1rem 2rem;
     display: flex;
     flex-direction: column;
     flex: 1 0 auto;
@@ -84,4 +84,10 @@
         background-color: var(--wordle-grey-dark);
         cursor: not-allowed;
     }
+}
+
+.col0 {
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 1em;
 }
