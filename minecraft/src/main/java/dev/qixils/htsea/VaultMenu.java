@@ -15,7 +15,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event.Result;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
@@ -23,7 +22,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Consumer;
 import org.bukkit.util.Vector;
 
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +33,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class MainMenu implements IInventory {
+public final class VaultMenu implements IInventory {
 	private static final Material LOADING_COLOR_1 = Material.LIGHT_BLUE_STAINED_GLASS_PANE;
 	private static final Material LOADING_COLOR_2 = Material.PURPLE_STAINED_GLASS_PANE;
 	private static final NumberFormat BALANCE_FORMAT = new DecimalFormat("#,###.###");
@@ -55,7 +53,7 @@ public final class MainMenu implements IInventory {
 	private int transactionTally = 0;
 	private double diamonds = 0;
 
-	public MainMenu(HTSea plugin) {
+	public VaultMenu(HTSea plugin) {
 		this.plugin = plugin;
 		inv = SmartInventory.builder()
 				.id("htsea-main-menu")
@@ -134,8 +132,8 @@ public final class MainMenu implements IInventory {
 			int diamondsToDeposit = transactionTally;
 			for (ItemStack item : player.getInventory().getContents()) {
 				if (diamondsToDeposit <= 0) break;
-				if (item == null || item.getType() != Material.DIAMOND || item.getAmount() < 0) continue;
-				int depositing = Math.min(item.getAmount(), transactionTally);
+				if (item == null || item.getType() != Material.DIAMOND || item.getAmount() <= 0) continue;
+				int depositing = Math.min(item.getAmount(), diamondsToDeposit);
 				diamondsToDeposit -= depositing;
 				item.setAmount(item.getAmount() - depositing);
 			}

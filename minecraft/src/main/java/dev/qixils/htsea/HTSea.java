@@ -30,8 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -100,7 +98,7 @@ public final class HTSea extends JavaPlugin implements Listener {
 		commandManager.command(
 				commandManager.commandBuilder("vault", ArgumentDescription.of("Opens the vault menu for managing your wallet"))
 						.senderType(Player.class)
-						.handler(ctx -> new MainMenu(this).open((Player) ctx.getSender()))
+						.handler(ctx -> new VaultMenu(this).open((Player) ctx.getSender()))
 		);
 
 		// load config
