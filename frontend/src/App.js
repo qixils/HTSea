@@ -1,5 +1,5 @@
 import './App.css';
-import {WhiteButton, BlueButton} from "./components/Sea/SeaButton";
+import {WhiteButton, BlueButton} from "./components/Sea/UI";
 const inviteURL = `https://discord.com/api/oauth2/authorize?client_id=${process.env.REACT_APP_CLIENT_ID}&permissions=0&scope=bot%20applications.commands`;
 function App() {
   return (

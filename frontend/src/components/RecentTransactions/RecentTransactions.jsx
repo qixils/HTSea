@@ -4,7 +4,7 @@ import {useState} from 'react';
 import {Link} from 'react-router-dom';
 
 import Avatar from '../Avatar/Avatar';
-import {BlueButton} from '../Sea/SeaButton';
+import {BlueButton} from '../Sea/UI';
 
 import api from '../../util/api';
 import Diamonds from '../Diamonds/Diamonds';

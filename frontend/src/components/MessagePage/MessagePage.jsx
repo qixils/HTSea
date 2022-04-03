@@ -7,7 +7,7 @@ import classNames from 'classnames';
 
 import Diamonds from '../Diamonds/Diamonds';
 import MessageList from '../MessageList/MessageList';
-import {BlueButton, WhiteButton} from '../Sea/SeaButton';
+import {BlueButton, WhiteButton} from '../Sea/UI';
 import Modal from '../Modal/Modal';
 import Loader from '../Loader/Loader';
 import ErrorPage from '../ErrorPage/ErrorPage';
