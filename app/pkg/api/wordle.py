@@ -26,14 +26,11 @@ def guessword(wword, wguess):
     return "".join(wscore)
 
 
-async def get_wordle_info(user_req: Request, words: Wordlist) -> typing.Dict:
+async def get_wordle_info(user_req: Request, words: Wordlist, user) -> typing.Dict:
     """
     Gets the Wordle info state for a given request/session,
     updating it if the cooldown period has passed
     """
-    user = await get_session_data(user_req)
-    if not user:
-        raise Exception("not logged in")
     secret = user['webtoken']
 
     user = dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret",
@@ -76,8 +73,8 @@ def wordle_info_to_response(info: typing.Dict) -> typing.Dict:
 
 
 @route.post("/guess")
-async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(Wordlist)):
-    info = await get_wordle_info(user_req, words)
+async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(Wordlist), user = Depends(session_user)):
+    info = await get_wordle_info(user_req, words, user)
 
     # only allow guessing if there's no cooldown period
     if info['cooldown'] is not None:
@@ -129,7 +126,7 @@ async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(
         })
 
     # re-fetch info
-    info = await get_wordle_info(user_req, words)
+    info = await get_wordle_info(user_req, words, user)
     return JSONResponse(content=jsonable_encoder({
             'success': True,
             'new_state': wordle_info_to_response(info)
@@ -137,6 +134,6 @@ async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(
 
 
 @route.get("/info")
-async def wordle_info(user_req: Request, words: Wordlist = Depends(Wordlist)):
-    info = await get_wordle_info(user_req, words)
+async def wordle_info(user_req: Request, words: Wordlist = Depends(Wordlist), user = Depends(session_user)):
+    info = await get_wordle_info(user_req, words, user)
     return JSONResponse(content=jsonable_encoder(wordle_info_to_response(info)))
