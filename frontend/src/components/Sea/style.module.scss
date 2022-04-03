@@ -1,10 +1,14 @@
+.ui {
+    font-family: inherit;
+    font-size: inherit;
+    border-radius: 10px;
+    padding: 8px;
+}
+
 .nftbutton {
     font-weight: 600;
     font-size: 20px;
-    font-family: inherit;
-    padding: 8px;
     width: 240px;
-    border-radius: 10px;
     transition: text-shadow 0.25s;
     cursor: pointer;
 
