@@ -32,9 +32,6 @@ async def get_wordle_info(user_req: Request, words: Wordlist, user) -> typing.Di
     updating it if the cooldown period has passed
     """
     secret = user['webtoken']
-
-    user = dict(await db.fetch_one("SELECT * FROM users WHERE webToken = :secret",
-                                   {"secret": secret}))
     word: str = user['wordleword']
     guesses: typing.Collection[str] = user['wordleguesses']
     cooldown: typing.Optional[datetime.datetime] = user['wordlecooldown']
@@ -126,7 +123,7 @@ async def guess_wordle(user_req: Request, guess: str, words: Wordlist = Depends(
         })
 
     # re-fetch info
-    info = await get_wordle_info(user_req, words, user)
+    info = await get_wordle_info(user_req, words, await get_session_data(user_req))
     return JSONResponse(content=jsonable_encoder({
             'success': True,
             'new_state': wordle_info_to_response(info)
