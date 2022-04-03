@@ -23,19 +23,16 @@ async def startup():
 
 
 # flow for starting from discord auth url
-@route.get("/register", response_class=fastapi.responses.HTMLResponse)
+@route.get("/register")
 async def register(user_req: Request,
                    http_client: aiohttp.ClientSession = Depends(httpClient),
                    code: typing.Optional[str] = None):
     if user_req.cookies.get("webToken"):
         return RedirectResponse(url="/", status_code=HTTPStatus.FOUND)
 
-    try:
-        # TODO: janky way to set a redirect URI
-        redirect_uri = os.getenv("API_URL_PREFIX") + user_req.scope['path']
-        res = await get_user_auth_data(http_client, code, redirect_uri)
-    except ApiException as e:
-        return JSONResponse(content=e.message, status_code=e.status_code)
+    # TODO: janky way to set a redirect URI
+    redirect_uri = os.getenv("API_URL_PREFIX") + user_req.scope['path']
+    res = await get_user_auth_data(http_client, code, redirect_uri)
 
     response = RedirectResponse(url="/", status_code=HTTPStatus.FOUND)
     if res['cookie']:
@@ -50,12 +47,9 @@ async def register_mc(user_req: Request,
                       http_client: aiohttp.ClientSession = Depends(httpClient),
                       code: typing.Optional[str] = None):
     # get user auth data
-    try:
-        # TODO: janky way to set a redirect URI
-        redirect_uri = os.getenv("API_URL_PREFIX") + user_req.scope['path']
-        res = await get_user_auth_data(http_client, code, redirect_uri)
-    except ApiException as e:
-        return JSONResponse(content=e.message, status_code=e.status_code)
+    # TODO: janky way to set a redirect URI
+    redirect_uri = os.getenv("API_URL_PREFIX") + user_req.scope['path']
+    res = await get_user_auth_data(http_client, code, redirect_uri)
 
     # ensure user doesn't already have a minecraft account
     by_snowflake = await db.fetch_one("SELECT minecraft FROM users WHERE snowflake=:id",

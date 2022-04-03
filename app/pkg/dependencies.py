@@ -90,7 +90,7 @@ def gen_mc_secret():
     return gen_csrf()
 
 
-def validate_internal_request(req: Request) -> typing.Optional[Response]:
+def validate_internal_request(req: Request) -> None:
     if 'Authorization' not in req.headers:
         raise ApiException(
             status_code=HTTPStatus.UNAUTHORIZED,

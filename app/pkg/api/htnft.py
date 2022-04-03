@@ -14,8 +14,7 @@ MINT_COST = 1
 
 
 @route.post("/mint_check", dependencies=[Depends(validate_internal_request)])
-async def mint_check(req: Request,
-                     resp: Response):
+async def mint_check(req: Request):
     data = await req.json()
     user = await get_user_data(int(data['user_id']))
     if user is None:
@@ -49,8 +48,7 @@ async def mint_check(req: Request,
 
 
 @route.post("/mint_htnft", dependencies=[Depends(validate_internal_request)])
-async def mint_htnft(req: Request,
-                     resp: Response):
+async def mint_htnft(req: Request):
     data = await req.json()
     if data['message']['authorID'] != data['user_id']:
         raise ApiException(
@@ -148,12 +146,12 @@ async def mint_htnft(req: Request,
                             'timestamp': mint_time
                         })
 
-
     return JSONResponse(content=jsonable_encoder({
         'success': True,
         'user_diamonds': user['diamonds'],
         'cost': MINT_COST,
     }))
+
 
 async def get_htnft(message_id: int):
     if message_id > (2**63 - 1) or message_id < 0:
@@ -166,8 +164,9 @@ async def get_htnft(message_id: int):
         raise ApiException(status_code=HTTPStatus.NOT_FOUND)
     return row
 
+
 @route.get("/messages/{message_id}")
-async def get_message(req: Request, resp: Response, message_id: int, row = Depends(get_htnft)):
+async def get_message(message_id: int, row=Depends(get_htnft)):
     
     users = {str(user['snowflake']): {
         'id': str(user['snowflake']),
@@ -321,6 +320,7 @@ async def buy_htnft(req: Request, resp: Response, message_id: int, new_owner = D
         'newDiamonds': new_owner['diamonds'] - row['currentprice']
     }))
 
+
 async def transactions_to_api_response(txs):
     user_ids = set()
     for row in txs:
@@ -341,6 +341,7 @@ async def transactions_to_api_response(txs):
     } for tx in txs],
         'users': users_resp
     }
+
 
 @route.get('/recent_transactions')
 async def recent_transactions(req: Request, resp: Response, before: float = None):
