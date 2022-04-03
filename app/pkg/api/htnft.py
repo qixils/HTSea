@@ -344,28 +344,30 @@ async def transactions_to_api_response(txs):
 
 
 @route.get('/recent_transactions')
-async def recent_transactions(req: Request, resp: Response, before: float = None):
+async def recent_transactions(req: Request, resp: Response, before: float = None, limit: int = 10):
     if before is None: before = datetime.datetime.now().timestamp()
     rows = await db.fetch_all("""
         SELECT * FROM transactions 
          WHERE timestamp < :before 
          ORDER BY timestamp 
-          DESC LIMIT 10""", {
-        'before': datetime.datetime.fromtimestamp(before)
+          DESC LIMIT :lim""", {
+        'before': datetime.datetime.fromtimestamp(before),
+        'lim': limit
     })
 
     payload = await transactions_to_api_response(rows)
     return JSONResponse(content=jsonable_encoder(payload))
 
 @route.get('/recent_transactions/user/{user_id}')
-async def recent_transactions_user(req: Request, resp: Response, user_id: int, before: float = None):
+async def recent_transactions_user(req: Request, resp: Response, user_id: int, before: float = None, limit: int = 10):
     if before is None: before = datetime.datetime.now().timestamp()
     rows = await db.fetch_all("""
         SELECT * FROM transactions 
          WHERE timestamp < :before AND (buyer = :uid OR seller = :uid) 
          ORDER BY timestamp 
-          DESC LIMIT 10""", {
+          DESC LIMIT :lim""", {
         'before': datetime.datetime.fromtimestamp(before),
+        'lim': limit,
         'uid': user_id
     })
 
@@ -373,14 +375,15 @@ async def recent_transactions_user(req: Request, resp: Response, user_id: int, b
     return JSONResponse(content=jsonable_encoder(payload))
 
 @route.get('/recent_transactions/message/{message_id}')
-async def recent_transactions_message(req: Request, resp: Response, message_id: int, before: float = None):
+async def recent_transactions_message(req: Request, resp: Response, message_id: int, before: float = None, limit: int = 10):
     if before is None: before = datetime.datetime.now().timestamp()
     rows = await db.fetch_all("""
         SELECT * FROM transactions 
          WHERE timestamp < :before AND message = :mid 
          ORDER BY timestamp 
-          DESC LIMIT 10""", {
+          DESC LIMIT :lim""", {
         'before': datetime.datetime.fromtimestamp(before),
+        'lim': limit,
         'mid': message_id
     })
 
