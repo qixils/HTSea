@@ -88,7 +88,6 @@ function Marketplace() {
                         {items.map(id => <NFTPreviewPriced id={id} key={id} />)}
                     </div>)
                 }
-                className={style.paginator}
             /> :
             "No HTNFTs found."
         }

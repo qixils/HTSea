@@ -58,8 +58,13 @@ function NFTPreviewPriced({id}) {
             {message === null ?
                 <Loader /> :
                 <div className={style.priced}>
-                    <MessageList messageData={message} />
-                    <Diamonds>{message.message.currentPrice}</Diamonds>
+                    <div className={style["prz-msg-wrapper"]}>
+                        <MessageList messageData={message} className={style["fuck-you-border"]}/>
+                    </div>
+                    <div className={style["prz-dia-wrapper"]}>
+                        <Diamonds>{message.message.currentPrice}</Diamonds>
+                    </div>
+                    
                 </div>}
             </Link>
         </div>
