@@ -1,5 +1,5 @@
 import './colors.module.scss';
-import style from './index.module.css';
+import style from './index.module.scss';
 
 import React from 'react';
 import ReactDOM from 'react-dom';

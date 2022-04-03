@@ -23,3 +23,20 @@ html, body {
   display: flex;
   flex: 1 1 auto;
 }
+
+h1 {
+    font-weight: 600;
+    font-size: 35px;
+    margin-bottom: 5px;
+}
+
+h2 {
+    font-weight: 600;
+    font-size: 20px;
+    margin-bottom: 5px;
+}
+
+a {
+    color: var(--blue-opensea);
+    text-decoration: none;
+}
