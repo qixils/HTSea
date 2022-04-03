@@ -1,10 +1,13 @@
 import style from './style.module.scss';
 import diamond from '../../icons/diamond.png';
+import classNames from 'classnames';
 
-function Diamonds({diamonds}) {
-    return <span className={style.diamonds}>
-        <img className={style['diamond-icon']} src={diamond} width="24" height="26" alt="Diamonds" />
-        {diamonds}
+function Diamonds({children, width = 24, inline = false}) {
+    return <span className={classNames(style.diamonds, {
+        [style.inline]: inline
+    })}>
+        <img className={style['diamond-icon']} src={diamond} width={width} alt="Diamonds" />
+        {children}
     </span>
 }
 

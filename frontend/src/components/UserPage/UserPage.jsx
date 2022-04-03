@@ -77,7 +77,7 @@ const UserPage = () => {
                 <span className={style.username}>{user.name}</span>
                 <span className={style.discriminator}>#{user.discriminator}</span>
                 <span className={style.balance}>
-                    <Diamonds diamonds={user.diamonds} />
+                    <Diamonds>{user.diamonds}</Diamonds>
                 </span>
             </div>
             <div className={style.col0}>
