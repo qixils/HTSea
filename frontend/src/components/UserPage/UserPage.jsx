@@ -10,6 +10,7 @@ import Diamonds from '../Diamonds/Diamonds';
 import MessageList from '../MessageList/MessageList';
 import ErrorPage from '../ErrorPage/ErrorPage';
 import Paginator from '../Paginator/Paginator';
+import {TransactionFeed} from '../RecentTransactions/RecentTransactions';
 
 import {getUser, USER_IDLE, USER_UPDATING, USER_SUCCESS} from '../../redux/user';
 import api from '../../util/api';
@@ -79,19 +80,25 @@ const UserPage = () => {
                     <Diamonds diamonds={user.diamonds} />
                 </span>
             </div>
-            {user.htnftIDs.length > 0 ?
-                <Paginator
-                    items={user.htnftIDs}
-                    pageSize={5}
-                    header="This user's HTNFTs:"
-                    body={items => (
-                        <div className={style.htnfts}>
-                            {items.map(id => <NFTPreview id={id} key={id} />)}
-                        </div>)
-                    }
-                /> :
-                "This user doesn't own any HTNFTs."
-            }
+            <div className={style.col0}>
+                {user.htnftIDs.length > 0 ?
+                    <Paginator
+                        items={user.htnftIDs}
+                        pageSize={5}
+                        header="This user's HTNFTs:"
+                        body={items => (
+                            <div className={style.htnfts}>
+                                {items.map(id => <NFTPreview id={id} key={id} />)}
+                            </div>)
+                        }
+                    /> :
+                    "This user doesn't own any HTNFTs."
+                }
+                <div>
+                    <h2>This user's recent transactions:</h2>
+                    <TransactionFeed endpoint={`/api/recent_transactions/user/${id}`} />
+                </div>
+            </div>
         </div>
     );
 };
