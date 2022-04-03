@@ -62,7 +62,7 @@ const TransactionFeed = (props) => {
             {transactions.map(tx => {
                 console.log(tx.buyer, tx.seller);
                 return (
-                    <div className={style.transaction}>
+                    <div className={style.transaction} key={tx.id}>
                         {inlineUser(users.get(tx.buyer))}
                         {tx.seller ? (
                             <span> bought HTNFT <Link to={`/messages/${tx.messageID}`}>#{tx.messageID}</Link> from {inlineUser(users.get(tx.seller))} for <Diamonds width={16} inline>{tx.cost}</Diamonds></span>
