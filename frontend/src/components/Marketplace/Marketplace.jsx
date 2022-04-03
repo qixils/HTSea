@@ -34,7 +34,6 @@ function Marketplace() {
             <div>
                 <span>Price: </span>
                 <Input 
-                    className={style["input-boxes"]} 
                     type="number" 
                     placeholder="Min" 
                     min={0} 
@@ -44,7 +43,6 @@ function Marketplace() {
                     }}/>
                 <span> to </span>
                 <Input 
-                    className={style["input-boxes"]} 
                     type="number" 
                     placeholder="Max" 
                     min={0} 
