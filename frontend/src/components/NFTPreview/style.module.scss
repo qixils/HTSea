@@ -17,3 +17,8 @@
 
     transition: box-shadow 0.25s ease;
 }
+
+.priced {
+    display: grid;
+    grid-template-columns: 90% 10%;
+}

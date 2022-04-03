@@ -35,4 +35,36 @@ function NFTPreview({id}) {
     );
 };
 
+function NFTPreviewPriced({id}) {
+    const [message, setMessage] = useState(null);
+    const [loadState, setLoadState] = useState('idle');
+
+    if (message === null && loadState === 'idle') {
+        setLoadState('loading');
+        api(`/api/messages/${id}`)
+        .then(res => {
+            setMessage(res);
+            setLoadState('loaded');
+        })
+        .catch(err => {
+            setMessage(null);
+            setLoadState('error');
+        });
+    }
+
+    return (
+        <div className={style['nft-preview']}>
+            <Link to={`/messages/${id}`}>
+            {message === null ?
+                <Loader /> :
+                <div className={style.priced}>
+                    <MessageList messageData={message} />
+                    <Diamonds>{message.message.currentPrice}</Diamonds>
+                </div>}
+            </Link>
+        </div>
+    );
+};
+
 export default NFTPreview;
+export {NFTPreview, NFTPreviewPriced};

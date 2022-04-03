@@ -1,0 +1,36 @@
+.marketplace {
+    padding: 1em;
+    margin: 0 4rem;
+    width: 100%;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+}
+
+.filters {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: 20px;
+}
+
+.input-boxes {
+    width: 90px;
+}
+
+.apply-button {
+    margin-left: 0.5em;
+    width: 150px;
+}
+
+.htnfts {
+    flex: 1 1 auto;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    gap: 0.5rem;
+    border-radius: 0.25rem;
+	border: 1px solid var(--border-light);
+}

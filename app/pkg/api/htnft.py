@@ -389,3 +389,35 @@ async def recent_transactions_message(req: Request, resp: Response, message_id: 
 
     payload = await transactions_to_api_response(rows)
     return JSONResponse(content=jsonable_encoder(payload))
+
+@route.get('/marketplace_messages')
+async def messages_buyable(req: Request, resp: Response, sort: str = "none", min: float = -1, max: float = -1):
+    if sort == "none": sort = "new"
+
+    if sort == "pricelh":
+        cmd = "SELECT messageSnowflake, currentPrice FROM htnfts WHERE currentPrice IS NOT NULL ORDER BY currentPrice ASC"
+    elif sort == "pricehl":
+        cmd = "SELECT messageSnowflake, currentPrice FROM htnfts WHERE currentPrice IS NOT NULL ORDER BY currentPrice DESC"
+    elif sort == "new":
+        cmd = "SELECT messageSnowflake, currentPrice FROM htnfts WHERE currentPrice IS NOT NULL ORDER BY mintedAt DESC"
+    elif sort == "old":
+        cmd = "SELECT messageSnowflake, currentPrice FROM htnfts WHERE currentPrice IS NOT NULL ORDER BY mintedAt ASC"
+    else:
+        raise ApiException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            error="INVALID_SORT"
+        )
+
+    def in_range(price):
+        res = True
+        if min >= 0: res &= min <= price
+        if max >= 0: res &= price <= max
+        return res
+    
+    rows = await db.fetch_all(cmd)
+    ids = [str(r["messagesnowflake"]) for r in rows if in_range(r["currentprice"])]
+    payload = {
+        'success': True,
+        'ids': ids
+    }
+    return JSONResponse(content=jsonable_encoder(payload))

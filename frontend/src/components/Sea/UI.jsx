@@ -3,7 +3,7 @@ import cls from 'classnames';
 
 export function BlueButton(props) {
     return (<button 
-            className={cls(style.ui, style.nftbutton, style.nbb)}
+            className={cls(style.ui, style.nftbutton, style.nbb, props.className)}
             onClick={props.onClick}
             disabled={!!props.disabled}
             >
@@ -12,7 +12,7 @@ export function BlueButton(props) {
 }
 export function WhiteButton(props) {
     return (<button 
-            className={cls(style.ui, style.nftbutton, style.nbw)}
+            className={cls(style.ui, style.nftbutton, style.nbw, props.className)}
             onClick={props.onClick}
             disabled={!!props.disabled}
             >

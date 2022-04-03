@@ -11,6 +11,15 @@ from pkg.api import wordle
 
 app = FastAPI()
 
+# TODO: rework CORS permissions
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.include_router(htnft.route)
 app.include_router(users.route)
 app.include_router(users.base_route)

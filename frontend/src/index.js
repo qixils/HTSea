@@ -16,6 +16,7 @@ import UserPage from './components/UserPage/UserPage';
 import Navbar from './components/Navbar/Navbar';
 import Wordle from './components/Wordle/Wordle';
 import RecentTransactions from './components/RecentTransactions/RecentTransactions';
+import Marketplace from './components/Marketplace/Marketplace';
 
 import rootReducer from './redux/reducer';
 const store = createStore(rootReducer(), applyMiddleware(thunkMiddleware));
@@ -30,6 +31,7 @@ ReactDOM.render(
                     <Routes>
                         <Route path="/" element={<App />} />
                         <Route path="wordle" element={<Wordle />} />
+                        <Route path="explore" element={<Marketplace />} />
                         <Route path="activity" element={<RecentTransactions />} />
                         <Route path="messages/:id" element={<MessagePage />} />
                         <Route path="user/:id" element={<UserPage />} />
