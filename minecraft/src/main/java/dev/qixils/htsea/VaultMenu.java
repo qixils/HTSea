@@ -2,6 +2,7 @@ package dev.qixils.htsea;
 
 import dev.qixils.htsea.responses.EmptyResponse;
 import dev.qixils.htsea.responses.ProfileResponse;
+import dev.qixils.htsea.responses.Response;
 import fr.minuskube.inv.ClickableItem;
 import fr.minuskube.inv.SmartInventory;
 import fr.minuskube.inv.content.InventoryContents;
@@ -124,11 +125,29 @@ public final class VaultMenu implements IInventory {
 		});
 	}
 
+	private Component getErrorMessage(Response response) {
+		Component message = Component.text("An error occurred while attempting to perform this transaction.", NamedTextColor.RED);
+		String error = " The error was " + response.status;
+		if (response.error != null)
+			error += ' ' + response.error;
+		message = message.append(Component.text(error, NamedTextColor.GRAY));
+		return message;
+	}
+
 	private void updateTransactionItems(Player player, InventoryContents contents) {
 		contents.set(TRANSACTION_ITEM_ROW, 4, ClickableItem.of(getTransactionTallyItem(), e -> {
 			if (!e.isLeftClick() || e.isShiftClick()) return;
 			if (transactionTally == 0) return;
 			player.closeInventory();
+			ProfileResponse profile = plugin.getProfile(player);
+			if (profile.hasError()) {
+				player.sendMessage(getErrorMessage(profile));
+				return;
+			}
+			if (-transactionTally > profile.getDiamonds()) {
+				player.sendMessage(Component.text("You do not have enough Diamonds to complete this transaction.", NamedTextColor.RED));
+				return;
+			}
 			int diamondsToDeposit = transactionTally;
 			for (ItemStack item : player.getInventory().getContents()) {
 				if (diamondsToDeposit <= 0) break;
@@ -170,11 +189,7 @@ public final class VaultMenu implements IInventory {
 					if (transactionTally > 0)
 						Bukkit.getScheduler().runTask(plugin, () -> player.getWorld().dropItem(player.getLocation(), new ItemStack(Material.DIAMOND, transactionTally), getItemModifier(player)));
 					// show the error
-					message = Component.text("An error occurred while attempting to perform this transaction.", NamedTextColor.RED);
-					String error = " The error was " + response.status;
-					if (response.error != null)
-						error += ' ' + response.error;
-					message = message.append(Component.text(error, NamedTextColor.GRAY));
+					message = getErrorMessage(response);
 				} else {
 					message = Component.text("Your ", NamedTextColor.GREEN)
 							.append(transactionTally > 0 ? Component.text("deposit", NamedTextColor.GREEN) : Component.text("withdrawal", NamedTextColor.RED))
