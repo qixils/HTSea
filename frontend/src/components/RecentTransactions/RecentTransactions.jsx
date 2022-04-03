@@ -8,6 +8,8 @@ import {BlueButton} from '../Sea/SeaButton';
 
 import api from '../../util/api';
 
+const TX_LIMIT = 10;
+
 const inlineUser = user => ( user ?
     <Link to={`/user/${user.id}`}>
         <span className={style.user}>
@@ -31,10 +33,11 @@ const TransactionFeed = (props) => {
         api(endpoint)
         .then(res => {
             setTransactionBatches([res]);
-            setLoading(false);
         })
         .catch(err => {
             setTransactionBatches(null);
+        })
+        .finally(() => {
             setLoading(false);
         });
     }
@@ -48,6 +51,9 @@ const TransactionFeed = (props) => {
                 users.set(user.id, user);
             }
         }
+
+        let lastBatch = transactionBatches[transactionBatches.length - 1];
+        if (moreRemaining && lastBatch.transactions.length < TX_LIMIT) setMoreRemaining(false);
     }
 
     return (
@@ -70,7 +76,6 @@ const TransactionFeed = (props) => {
                     api(`${endpoint}?before=${transactions[transactions.length - 1].timestamp}`)
                     .then(res => {
                         setTransactionBatches([...transactionBatches, res]);
-                        if (res.transactions.length === 0) setMoreRemaining(false);
                         setLoading(false);
                     })
                     .catch(err => {
