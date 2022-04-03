@@ -7,6 +7,7 @@ import Avatar from '../Avatar/Avatar';
 import {BlueButton} from '../Sea/SeaButton';
 
 import api from '../../util/api';
+import Diamonds from '../Diamonds/Diamonds';
 
 const TX_LIMIT = 10;
 
@@ -64,7 +65,7 @@ const TransactionFeed = (props) => {
                     <div className={style.transaction}>
                         {inlineUser(users.get(tx.buyer))}
                         {tx.seller ? (
-                            <span> bought HTNFT <Link to={`/messages/${tx.messageID}`}>#{tx.messageID}</Link> from {inlineUser(users.get(tx.seller))}</span>
+                            <span> bought HTNFT <Link to={`/messages/${tx.messageID}`}>#{tx.messageID}</Link> from {inlineUser(users.get(tx.seller))} for <Diamonds width={16} inline>{tx.cost}</Diamonds></span>
                         ) : (
                             <span> minted HTNFT <Link to={`/messages/${tx.messageID}`}>#{tx.messageID}</Link></span>
                         )}

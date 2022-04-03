@@ -98,7 +98,7 @@ const MessagePage = () => {
         <div className={style['message-page']}>
             <Modal isOpen={buyModalOpen} onClose={() => setBuyModalOpen(false)}>
                 <div className={style['modal-contents']}>
-                    <div className={style['modal-row']}>Buy this message for <Diamonds diamonds={currentPrice}/>?</div>
+                    <div className={style['modal-row']}>Buy this message for <Diamonds>{currentPrice}</Diamonds>?</div>
                     <div className={classNames(style['modal-row'], style['modal-buttons'])}>
                         <BlueButton onClick={buyMessageCallback}>Buy</BlueButton>
                         <WhiteButton onClick={() => setBuyModalOpen(false)}>Cancel</WhiteButton>
@@ -127,7 +127,7 @@ const MessagePage = () => {
             {currentPrice || buySellAction ?
             <div className={style["sale-wrapper"]}>
                 {currentPrice !== null ?
-                    <div>Current price: <Diamonds diamonds={currentPrice} /></div> :
+                    <div>Current price: <Diamonds>{currentPrice}</Diamonds></div> :
                     null}
                 {buySellAction}
             </div> :

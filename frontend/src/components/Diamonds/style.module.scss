@@ -5,6 +5,11 @@
     vertical-align: middle;
     display: inline-flex;
     align-items: center;
+
+    &.inline {
+        font-weight: inherit;
+        font-size: inherit;
+    }
 }
 
 .diamond-icon {
