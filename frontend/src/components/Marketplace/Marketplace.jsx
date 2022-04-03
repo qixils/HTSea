@@ -1,18 +1,9 @@
 import style from './style.module.scss';
 
-import {Component, useState} from 'react';
-import {connect} from 'react-redux';
-import {Link} from 'react-router-dom';
-import classNames from 'classnames';
-
-import Avatar from '../Avatar/Avatar';
-
+import {useState} from 'react';
 import { Dropdown, Input, WhiteButton } from '../Sea/UI';
 import api from '../../util/api';
 import Paginator from '../Paginator/Paginator';
-import Loader from '../Loader/Loader';
-import MessageList from '../MessageList/MessageList';
-import Diamonds from '../Diamonds/Diamonds';
 import {NFTPreviewPriced} from '../NFTPreview/NFTPreview';
 
 function Marketplace() {
