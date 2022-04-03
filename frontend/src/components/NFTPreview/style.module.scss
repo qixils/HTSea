@@ -18,22 +18,16 @@
     transition: box-shadow 0.25s ease;
 }
 
-.priced {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.msg-wrapper {
     border-radius: 0.25rem;
     border: 1px solid var(--border-light);
-	background-color: var(--bg-primary);
-}
-.prz-msg-wrapper {
-    width: 90%;
-}
-
-.prz-dia-wrapper {
-    padding-right: 1em;
+    background-color: var(--bg-primary);
+    overflow: auto;
+    display: flex;
+    align-items: center;
 }
 
-.fuck-you-border {
-    border: none;
+.price {
+    margin-left: auto;
+    margin-right: 1em;
 }

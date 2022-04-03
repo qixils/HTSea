@@ -1,17 +1,12 @@
 $avatar-margin-right: 0.5em;
 
 .message-list {
-	background-color: var(--bg-primary);
 	color: var(--text);
 	flex: 0 0 auto;
 	overflow-wrap: break-word;
 	padding: 0.75em;
 	display: flex;
 	flex-direction: column;
-	border-radius: 0.25rem;
-	border: 1px solid var(--border-light);
-	width: 100%;
-	box-sizing: border-box;
 }
 
 .message.referenced {

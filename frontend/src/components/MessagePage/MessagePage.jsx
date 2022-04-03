@@ -123,7 +123,9 @@ const MessagePage = () => {
                 <h1>{adjective} Message #{message.messageID}</h1>
                 <div className={style.owner}>Owned by <Link to={`/user/${owner.id}`}>{owner.name}#{owner.discriminator}</Link></div>
             </div>
-            <MessageList messageData={messageData} />
+            <div className={style.message}>
+                <MessageList messageData={messageData} />
+            </div>
             {currentPrice || buySellAction ?
             <div className={style["sale-wrapper"]}>
                 {currentPrice !== null ?

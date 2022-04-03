@@ -4,7 +4,7 @@ import {useState} from 'react';
 import { Dropdown, Input, WhiteButton } from '../Sea/UI';
 import api from '../../util/api';
 import Paginator from '../Paginator/Paginator';
-import {NFTPreviewPriced} from '../NFTPreview/NFTPreview';
+import NFTPreview from '../NFTPreview/NFTPreview';
 
 function Marketplace() {
     const [sort, setSort] = useState("none");
@@ -74,7 +74,7 @@ function Marketplace() {
                 header="For sale:"
                 body={items => (
                     <div className={style.htnfts}>
-                        {items.map(id => <NFTPreviewPriced id={id} key={id} />)}
+                        {items.map(id => <NFTPreview priced id={id} key={id} />)}
                     </div>)
                 }
             /> :

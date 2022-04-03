@@ -4,7 +4,6 @@
     padding: 1em;
     margin: 0 4rem;
     display: flex;
-    align-items: flex-start;
     flex-direction: column;
     width: 100%;
     gap: 20px;
@@ -37,6 +36,12 @@ h2 {
 a {
     color: var(--blue-opensea);
     text-decoration: none;
+}
+
+.message {
+    border-radius: 0.25rem;
+    border: 1px solid var(--border-light);
+    overflow: auto;
 }
 
 /* .sale-wrapper {
