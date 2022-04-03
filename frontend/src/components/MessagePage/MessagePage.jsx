@@ -134,7 +134,7 @@ const MessagePage = () => {
             null
             }
             
-            <h1>Transaction History</h1>
+            <h2>Transaction History</h2>
             <TransactionFeed endpoint={`/api/recent_transactions/message/${message.messageID}`} />
         </div>
     );
