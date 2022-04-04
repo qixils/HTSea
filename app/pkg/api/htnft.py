@@ -1,6 +1,7 @@
 from http import HTTPStatus
 from uuid import uuid4
 import json
+import enum
 
 from fastapi import APIRouter, Depends, Request, Response
 from fastapi.responses import JSONResponse
@@ -11,6 +12,17 @@ route = APIRouter(prefix="/api")
 
 # TODO vary the cost of minting an HTNFT
 MINT_COST = 1
+
+
+@enum.unique
+class MarketplaceSort(enum.Enum):
+    """
+    Enum for the different ways to sort the marketplace.
+    """
+    PRICELH = "currentPrice ASC"
+    PRICEHL = "currentPrice DESC"
+    NEW = "mintedAt DESC"
+    OLD = "mintedAt ASC"
 
 
 @route.post("/mint_check", dependencies=[Depends(validate_internal_request)])
@@ -366,6 +378,7 @@ async def recent_transactions(req: Request, resp: Response, before: float = None
     payload = await transactions_to_api_response(rows)
     return JSONResponse(content=jsonable_encoder(payload))
 
+
 @route.get('/recent_transactions/user/{user_id}')
 async def recent_transactions_user(req: Request, resp: Response, user_id: int, before: float = None, limit: int = Depends(check_rtx_limit)):
     if before is None: before = datetime.datetime.now().timestamp()
@@ -382,6 +395,7 @@ async def recent_transactions_user(req: Request, resp: Response, user_id: int, b
     payload = await transactions_to_api_response(rows)
     return JSONResponse(content=jsonable_encoder(payload))
 
+
 @route.get('/recent_transactions/message/{message_id}')
 async def recent_transactions_message(req: Request, resp: Response, message_id: int, before: float = None, limit: int = Depends(check_rtx_limit)):
     if before is None: before = datetime.datetime.now().timestamp()
@@ -396,4 +410,31 @@ async def recent_transactions_message(req: Request, resp: Response, message_id: 
     })
 
     payload = await transactions_to_api_response(rows)
+    return JSONResponse(content=jsonable_encoder(payload))
+
+
+@route.get('/marketplace_messages')
+async def messages_buyable(sort: str = "none", min_value: float = -1, max_value: float = -1):
+    if sort == "none": sort = "new"
+
+    try:
+        cmd = "SELECT messageSnowflake, currentPrice FROM htnfts WHERE currentPrice IS NOT NULL ORDER BY " + MarketplaceSort[sort.upper()].value
+    except KeyError:
+        raise ApiException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            error="INVALID_SORT"
+        )
+
+    def in_range(price):
+        res = True
+        if min_value >= 0: res &= min_value <= price
+        if max_value >= 0: res &= price <= max_value
+        return res
+    
+    rows = await db.fetch_all(cmd)
+    ids = [str(r["messagesnowflake"]) for r in rows if in_range(r["currentprice"])]
+    payload = {
+        'success': True,
+        'ids': ids
+    }
     return JSONResponse(content=jsonable_encoder(payload))

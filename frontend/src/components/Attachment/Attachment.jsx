@@ -7,7 +7,6 @@ import MessageImage from '../MessageImage/MessageImage';
 import {isImage, isAudio} from '../../util/file-extensions';
 
 const Attachment = props => {
-	console.log(props);
 	return (
 		<div className={style.attachment}>
 			{

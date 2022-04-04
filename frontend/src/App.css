@@ -16,16 +16,6 @@
   margin-bottom: 40px;
 }
 
-h1 {
-  font-weight: 500;
-  font-size: 35px;
-}
-
-h2 {
-  font-weight: 300;
-  font-size: 20px;
-}
-
 .button-wrapper {
   display: flex;
   flex-direction: row;

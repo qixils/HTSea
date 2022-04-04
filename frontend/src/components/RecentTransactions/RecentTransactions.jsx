@@ -4,7 +4,7 @@ import {useState} from 'react';
 import {Link} from 'react-router-dom';
 
 import Avatar from '../Avatar/Avatar';
-import {BlueButton} from '../Sea/SeaButton';
+import {BlueButton} from '../Sea/UI';
 
 import api from '../../util/api';
 import Diamonds from '../Diamonds/Diamonds';
@@ -60,7 +60,6 @@ const TransactionFeed = (props) => {
     return (
         <div className={style.feed}>
             {transactions.map(tx => {
-                console.log(tx.buyer, tx.seller);
                 return (
                     <div className={style.transaction} key={tx.id}>
                         {inlineUser(users.get(tx.buyer))}

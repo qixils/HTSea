@@ -7,7 +7,7 @@ import classNames from 'classnames';
 
 import Diamonds from '../Diamonds/Diamonds';
 import MessageList from '../MessageList/MessageList';
-import {BlueButton, WhiteButton} from '../Sea/SeaButton';
+import {BlueButton, WhiteButton, Input} from '../Sea/UI';
 import Modal from '../Modal/Modal';
 import Loader from '../Loader/Loader';
 import ErrorPage from '../ErrorPage/ErrorPage';
@@ -107,7 +107,7 @@ const MessagePage = () => {
             </Modal>
             <Modal isOpen={sellModalOpen} onClose={() => setSellModalOpen(false)}>
                 <div className={style['modal-contents']}>
-                    <div className={style['modal-row']}>Sale price: <input type="number" min="0" step="0.001" value={salePrice.toFixed(3)} onChange={event => {
+                    <div className={style['modal-row']}>Sale price: <Input type="number" min="0" step="0.001" value={salePrice.toFixed(3)} onChange={event => {
                         const numVal = parseFloat(event.target.value);
                         if (Number.isFinite(numVal)) {
                             setSalePrice(numVal);
@@ -123,7 +123,9 @@ const MessagePage = () => {
                 <h1>{adjective} Message #{message.messageID}</h1>
                 <div className={style.owner}>Owned by <Link to={`/user/${owner.id}`}>{owner.name}#{owner.discriminator}</Link></div>
             </div>
-            <MessageList messageData={messageData} />
+            <div className={style.message}>
+                <MessageList messageData={messageData} />
+            </div>
             {currentPrice || buySellAction ?
             <div className={style["sale-wrapper"]}>
                 {currentPrice !== null ?

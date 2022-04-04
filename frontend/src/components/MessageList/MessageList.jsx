@@ -105,7 +105,7 @@ const MessageList = props => {
 	const message = messageData.message;
 
 	return (
-		<div className={style['message-list']}>
+		<div className={classNames(style['message-list'], props.className)}>
 			<div className={classNames({[style['message-inner']]: true})}>
 				<div className={style['message-avatar']}>
 					<Avatar

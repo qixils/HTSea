@@ -70,7 +70,6 @@ const getSession = dispatch => {
             dispatch(sessionSuccess(res));
         })
         .catch(err => {
-            console.log(err);
             dispatch(sessionError(err));
         })
 };

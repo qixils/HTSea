@@ -4,7 +4,6 @@
     padding: 1em;
     margin: 0 4rem;
     display: flex;
-    align-items: start;
     flex-direction: column;
     width: 100%;
     gap: 20px;
@@ -17,26 +16,15 @@
     justify-content: center;
 }
 
-h1 {
-    font-weight: 600;
-    font-size: 600;
-    margin-bottom: 5px;
-}
-
-h2 {
-    font-weight: 600;
-    font-size: 400;
-    margin-bottom: 5px;
-}
-
 .owner {
     font-weight: 300;
     font-size: 17px;
 }
 
-a {
-    color: var(--blue-opensea);
-    text-decoration: none;
+.message {
+    border-radius: 0.25rem;
+    border: 1px solid var(--border-light);
+    overflow: auto;
 }
 
 /* .sale-wrapper {
@@ -68,13 +56,6 @@ a {
     padding: 1rem;
     font-size: 30px;
     text-align: center;
-
-    input[type=number] {
-        padding: 10px;
-        border-radius: 10px;
-        font-size: 20px;
-        border: 3px solid var(--blue-opensea);
-    }
 }
 
 .modal-row {

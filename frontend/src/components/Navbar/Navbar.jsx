@@ -29,6 +29,7 @@ class Navbar extends Component {
                     <img className={style.logo} src={logo} alt="Logo" width="48" height="48" />HTSea
                 </Link>
                 <Link to="/activity" className={style['nav-link']}>Activity</Link>
+                <Link to="/explore" className={style['nav-link']}>Explore</Link>
                 <Link to="/wordle" className={style['nav-link']}>Wordle</Link>
                 {user ?
                         <div className={style.user}>
