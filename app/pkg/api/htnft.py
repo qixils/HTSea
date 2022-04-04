@@ -342,13 +342,15 @@ async def transactions_to_api_response(txs):
         'users': users_resp
     }
 
+
 def check_rtx_limit(limit: int = 10):
     if not 0 <= limit <= 20: raise ApiException(
         status_code=HTTPStatus.BAD_REQUEST,
         error='TX_LIMIT_OUT_OF_RANGE'
     )
-
     return limit
+
+
 @route.get('/recent_transactions')
 async def recent_transactions(req: Request, resp: Response, before: float = None, limit: int = Depends(check_rtx_limit)):
     if before is None: before = datetime.datetime.now().timestamp()
