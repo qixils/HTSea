@@ -16,7 +16,7 @@ function Marketplace() {
 
     if (msgIDs == null && !loading) {
         setLoading(true);
-        api(`/api/marketplace_messages?sort=${sort}&min=${priceRange[0]}&max=${priceRange[1]}`)
+        api(`/api/marketplace_messages?sort=${sort}&min_value=${priceRange[0]}&max_value=${priceRange[1]}`)
         .then(res => {
             setMsgIDs(res.ids);
         })
