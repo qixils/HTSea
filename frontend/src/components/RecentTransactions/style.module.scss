@@ -1,21 +1,19 @@
 .recent-transactions {
     padding: 1em;
     margin: 0 4rem;
-    width: 100%;
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
 }
 
 .feed {
     display: flex;
-    align-items: flex-start;
     flex-direction: column;
     gap: 0.5rem;
     overflow: auto;
     padding: 0.5rem;
     border-radius: 0.25rem;
     border: 1px solid var(--border-light);
-    width: 100%;
 }
 
 .transaction {
