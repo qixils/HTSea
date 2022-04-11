@@ -31,6 +31,10 @@ $avatar-margin-right: 0.5em;
 	}
 }
 
+.message-right {
+	overflow: auto;
+}
+
 .message-avatar {
 	margin-right: $avatar-margin-right;
 }
